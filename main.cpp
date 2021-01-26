@@ -19,9 +19,9 @@ int main() {
   int m = sizeof(b) / sizeof(b[0]);
 
   int merge_cnt = merge_base(a, b, n, m);
-  int fast_cnt = fast_intersect(a, b, n, m);
+  // int fast_cnt = fast_intersect(a, b, n, m);
 
   printf("merge = %d\n", merge_cnt);
-  printf("fast = %d\n", fast_cnt);
+  // printf("fast = %d\n", fast_cnt);
   return 0;
 }
