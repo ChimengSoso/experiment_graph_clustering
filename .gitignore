@@ -39,3 +39,4 @@ Thumbs.
 *.in
 *.out
 *.sol
+*.exe.stackdump
