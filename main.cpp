@@ -15,10 +15,10 @@ int bsearch(int val, int a[], int l, int r) {
   return lower_bound(a + l, a + r + 1, val) - a;
 }
 
-int main() {
-  int a[] = {1, 2, 3, 5, 6, 7, 10};
-  int b[] = {0, 4, 5, 7, 9, 11, 12};
+int a[] = {1, 2, 3, 5, 6, 7, 10};
+int b[] = {0, 4, 5, 7, 9, 11, 12};
 
+int main() {
   int n = sizeof(a) / sizeof(a[0]);
   int m = sizeof(b) / sizeof(b[0]);
 
@@ -32,5 +32,13 @@ int main() {
   printf("b-search of val %d = %d\n", 4, bsearch(4, a, 0, n - 1));
   printf("b-search of val %d = %d\n", 5, bsearch(5, a, 0, n - 1));
   printf("b-search of val %d = %d\n", 8, bsearch(8, a, 0, n - 1));
+  printf("b-search of val %d = %d\n", 11, bsearch(11, a, 0, n - 1));
+/* output of this case
+      b-search of val 3 = 2
+      b-search of val 4 = 3
+      b-search of val 5 = 3
+      b-search of val 8 = 6
+      b-search of val 11 = 7
+*/
   return 0;
 }
