@@ -49,13 +49,12 @@ int fast_intersect(int *a, int *b, int n, int m) {
   }
 }
 
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+unsigned int randInt(int l, int r) {
+  return uniform_int_distribution<unsigned int>(l, r)(rng);
+};
+
 int main() {
-  srand(time(0));
-  const int ITERATIONS = 1e7;
-  double sum = 0;
-  for (int i = 0; i < ITERATIONS; ++i)
-    sum += rand() % 1000000;
-  printf("Average value: %.20f\n", sum / ITERATIONS);
-  printf("RAND_MAX = %d\n", RAND_MAX);
+  
   return 0;
 }
