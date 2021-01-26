@@ -41,7 +41,7 @@ int intersect(int *a, int *b, int la, int ra, int lb, int rb) {
 int fast_intersect(int *a, int *b, int n, int m) {
   if (n > m) {
     return intersect(a, b, 0, n - 1, 0, m - 1);
-  } else if (m > n){
+  } else if (m >= n){
     return intersect(b, a, 0, m - 1, 0, n - 1);
   } else { // the case that not suitable for fast_intersect
     printf("m and n is equal.");
@@ -54,7 +54,99 @@ unsigned int randInt(int l, int r) {
   return uniform_int_distribution<unsigned int>(l, r)(rng);
 };
 
-int main() {
+int test_correctness(bool show = false) {
+  int n = (int) randInt(1, 200);
+  int m = (int) randInt(1, 200);
+  int *a = new int[n];
+  int *b = new int[m];
+  for (int i = 0; i < n; ++i) {
+    a[i] = randInt(1, 100);
+  }
+  for (int i = 0; i < m; ++i) {
+    b[i] = randInt(1, 100);
+  }
+  sort(a, a + n);
+  sort(b, b + m);
   
+  if (show) { printf("old size array a: %d\n", n);
+    printf("Array a: ");
+    for (int i = 0; i < n; ++i) {
+      printf("%d ", a[i]);
+    }
+    printf("\n");
+
+    printf("old size array b: %d\n", m);
+    printf("Array b: ");
+    for (int i = 0; i < m; ++i) {
+      printf("%d ", b[i]);
+    }
+    printf("\n");
+
+    printf("\n\nAfter uniqueness\n\n");
+  }
+  n = unique(a, a + n) - a;
+  m = unique(b, b + m) - b;
+  if (show) {
+    printf("new size array a: %d\n", n);
+    printf("Array a: ");
+    for (int i = 0; i < n; ++i) {
+      printf("%d ", a[i]);
+    }
+    printf("\n");
+
+    printf("new size array b: %d\n", m);
+    printf("Array b: ");
+    for (int i = 0; i < m; ++i) {
+      printf("%d ", b[i]);
+    }
+    printf("\n");
+  }
+  int merge_cnt = merge_base(a, b, n, m);
+  if (show) printf("\nmerge count: %d\n", merge_cnt);
+  int fast_cnt = fast_intersect(a, b, n, m);
+  if (show) printf("fast intersection count: %d\n", fast_cnt);
+  if (merge_cnt != fast_cnt) {
+    printf("size array a: %d\n", n);
+    printf("Array a:");
+    for (int i = 0; i < n; ++i) {
+      printf(" %d%c", a[i], i + 1 < n ? ',' :' ');
+    }
+    printf("\n");
+
+    printf("size array b: %d\n", m);
+    printf("Array b:");
+    for (int i = 0; i < m; ++i) {
+      printf(" %d%c", b[i], i + 1 < m ? ',' : ' ');
+    }
+    printf("\n");
+    printf("merge_cnt = %d\n", merge_cnt);
+    printf("fast intersect = %d\n", fast_cnt);
+
+  }
+  assert(merge_cnt == fast_cnt);
+  delete a;
+  delete b;
+}
+int a[] = {20, 30, 50, 52, 53, 62, 68, 71, 95, 97 };
+int b[] = { 3, 14, 28, 29, 32, 34, 39, 43, 47, 55, 57, 62, 63, 68, 74, 82, 83, 90, 91, 99};
+
+int main() {
+  // int testing = 1000000;
+  // while (testing--) {
+  //   test_correctness();
+  // }
+  // printf("end testing");
+
+  int n = sizeof(a) / sizeof(a[0]);
+  int m = sizeof(b) / sizeof(b[0]);
+  int merge_cnt = merge_base(a, b, n, m);
+  printf("merge = %d\n", merge_cnt);
+  int fast_cnt = fast_intersect(a, b, n, m);
+  if (n != m) {
+    int fast_cnt = fast_intersect(a, b, n, m);
+    printf("fast = %d\n", fast_cnt);
+  } else {
+    printf("fast intersection is stopped. n = %d, m = %d\n", n, m);
+  }
   return 0;
 }
