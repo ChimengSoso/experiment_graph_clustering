@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int merge_base(int a[], int b[], int n, int m) {
+int merge_base(int *a, int *b, int n, int m) {
   int c = 0, i = 0, j = 0;
   while (i < n && j < m) {
     if (a[i] < b[j]) ++i;
@@ -38,7 +38,7 @@ int intersect(int *a, int *b, int la, int ra, int lb, int rb) {
   return c;
 }
 
-int fast_intersect(int a[], int b[], int n, int m) {
+int fast_intersect(int *a, int *b, int n, int m) {
   if (n > m) {
     return intersect(a, b, 0, n - 1, 0, m - 1);
   } else if (m > n){
