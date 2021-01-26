@@ -49,21 +49,13 @@ int fast_intersect(int *a, int *b, int n, int m) {
   }
 }
 
-int a[] = {3, 4, 5};
-int b[] = {1, 2, 5, 8, 9};
-
 int main() {
-  int n = sizeof(a) / sizeof(a[0]);
-  int m = sizeof(b) / sizeof(b[0]);
-
-  int merge_cnt = merge_base(a, b, n, m);
-  printf("merge = %d\n", merge_cnt);
-
-  if (n != m) {
-    int fast_cnt = fast_intersect(a, b, n, m);
-    printf("fast = %d\n", fast_cnt);
-  } else {
-    printf("fast intersection is stopped. n = %d, m = %d\n", n, m);
-  }
+  srand(time(0));
+  const int ITERATIONS = 1e7;
+  double sum = 0;
+  for (int i = 0; i < ITERATIONS; ++i)
+    sum += rand() % 1000000;
+  printf("Average value: %.20f\n", sum / ITERATIONS);
+  printf("RAND_MAX = %d\n", RAND_MAX);
   return 0;
 }
