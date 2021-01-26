@@ -11,6 +11,10 @@ int merge_base(int a[], int b[], int n, int m) {
   return c;
 }    
 
+int bsearch(int val, int a[], int l, int r) {
+  return lower_bound(a + l, a + r + 1, val) - a;
+}
+
 int main() {
   int a[] = {1, 2, 3, 5, 6, 7, 10};
   int b[] = {0, 4, 5, 7, 9, 11, 12};
@@ -23,5 +27,10 @@ int main() {
 
   printf("merge = %d\n", merge_cnt);
   // printf("fast = %d\n", fast_cnt);
+
+  printf("b-search of val %d = %d\n", 3, bsearch(3, a, 0, n - 1));
+  printf("b-search of val %d = %d\n", 4, bsearch(4, a, 0, n - 1));
+  printf("b-search of val %d = %d\n", 5, bsearch(5, a, 0, n - 1));
+  printf("b-search of val %d = %d\n", 8, bsearch(8, a, 0, n - 1));
   return 0;
 }
