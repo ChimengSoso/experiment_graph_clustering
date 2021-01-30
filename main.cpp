@@ -86,10 +86,20 @@ void cluster(int s, set<int>& C) {
 }
 
 int main() {
+  // twitter graph
   // int num_V = 41652230;
   // int num_E = 1468364884;
-  int num_V = 12;
-  int num_E = 18;
+  // ifstream in("twitter-2010.txt");
+
+  // input.txt
+  // int num_V = 12;
+  // int num_E = 18;
+  // ifstream in("input.txt");
+
+  // facebook graph
+  int num_V = 4039;
+  int num_E = 88234;
+  ifstream in("facebook_combined.txt");
   
   // allocate external memory
   adj = new vector<int>[num_V + 1];
@@ -100,8 +110,7 @@ int main() {
 
   // read graph data from file
   string line;
-  ifstream in("input.txt");
-  // ifstream in("twitter-2010.txt");
+  
   
   int idx_edge = 0;
   if (in.is_open()) {
@@ -140,7 +149,7 @@ int main() {
     assert(false);
   }
 
-  // Start Time for algorithm 1
+  // Start Time for algorithm 1 (Chi algorithm)
   clock_t t = clock();
 
   // Calculating sigma cost
@@ -204,6 +213,50 @@ int main() {
     }
   }
   
+  printf("=================================\n");
+
+  // Reset everything
+  for (int i = 0; i <= num_V; ++i) {
+    visit[i] = 0;
+    N_eps[i] = 0;
+  }
+  sigma.clear();
+
+  // Start Time for algorithm 2 (SCAN algorithm)
+  t = clock();
+
+  // Calculating sigma cost
+  for (int i = 0; i < num_E; ++i) {
+    int u = edge[i].first, v = edge[i].second;
+    sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+    sigma[{v, u}] = sigma[{u, v}];
+  }
+
+  // Memoization N_eps
+  for (int u = 0; u <= num_V; ++u) {
+    int count = 0;
+    for (int v: adj[u]) {
+      if (u == v || sigma[{u, v}] >= epsilon)
+        ++count;
+    }
+    N_eps[u] = count;
+  }
+
+  // Make cluster
+   Cluster = set<set<int>>();
+  for (int u = 0; u <= num_V; ++u) {
+    set<int> C;
+    if (!visit[u]) {
+      cluster(u, C);
+      if (C.size() > 1)
+        Cluster.insert(C);
+    }
+  }
+
+  // Finish Time for algorithm 1
+  t = clock() - t;
+  printf("Time for algorithm 2: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+
   printf("end\n");
   return 0;
 
