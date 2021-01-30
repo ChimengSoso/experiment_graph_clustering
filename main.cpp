@@ -107,15 +107,15 @@ static inline void trim(std::string &s) {
 
 int main() {
 
-  // const string data_set = "RO_edges.csv";
-  const string data_set = "HU_edges.csv";
-  // const string data_set = "HR_edges.csv";
   // const string data_set = "input.txt";
+  // const string data_set = "RO_edges.csv";
+  // const string data_set = "HU_edges.csv";
+  // const string data_set = "HR_edges.csv";
   // const string data_set = "soc-Epinions1.txt";
   // const string data_set = "facebook_combined.txt";
   // const string data_set = "twitter_combined.txt"; // very many of nodes
-  // const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
-  printf("[Preparing] load dataset...");
+  const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
+  
 
   // twitter graph
   // int num_V = 41652230;
@@ -130,8 +130,19 @@ int main() {
   if (scan_data.is_open()) {
     // get size of file
     scan_data.seekg(0, scan_data.end);
-    int file_size = scan_data.tellg();
+    long long file_size = scan_data.tellg();
     scan_data.seekg(0, scan_data.beg);
+    
+    char show_size[20];
+    if (file_size < 1e3) sprintf(show_size, "%lld byte(s)", file_size);
+    else if (file_size < 1e6) sprintf(show_size, "%.2f KB", 1.* file_size / (1LL << 10));
+    else if (file_size < 1e9) sprintf(show_size, "%.2f MB", 1. * file_size / (1LL << 20));
+    else if (file_size < 1e12) sprintf(show_size, "%.2f GB", 1. * file_size / (1LL << 30));
+    else sprintf(show_size, "%.2f TB", file_size / (1LL << 40));
+
+    printf("[Status] size of dataset: %s\n", show_size);
+    printf("[Preparing] load dataset...");
+    fflush(stdout);
 
     int u, v;
     int load_step = 0;
