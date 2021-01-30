@@ -86,6 +86,8 @@ void cluster(int s, set<int>& C) {
 }
 
 int main() {
+  // int num_V = 41652230;
+  // int num_E = 1468364884;
   int num_V = 12;
   int num_E = 18;
   
@@ -99,15 +101,18 @@ int main() {
   // read graph data from file
   string line;
   ifstream in("input.txt");
+  // ifstream in("twitter-2010.txt");
   
   int idx_edge = 0;
   if (in.is_open()) {
     int u, v;
-    while ( getline(in, line)) {
+    while (getline(in, line)) {
       istringstream iss(line);
       iss >> u >> v;
       adj[u].push_back(v);
       adj[v].push_back(u);
+      adj[u].shrink_to_fit();
+      adj[v].shrink_to_fit();
       edge[idx_edge++] = make_pair(u, v);
     }
     in.close();
@@ -181,19 +186,22 @@ int main() {
   t = clock() - t;
   printf("Time for algorithm 1: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
 
-  // Show N_eps
-  for (int i = 0; i <= num_V; ++i) {
-    printf("N_eps for node %d: %d\n", i, N_eps[i]);
-  }
-
-  // show Cluster
-  int clus = 0;
-  for (auto C: Cluster) {
-    printf("Cluster %d:", ++clus);
-    for (int node: C) {
-      printf(" %d", node);
+  DEBUG {
+  
+    // Show N_eps
+    for (int i = 0; i <= num_V; ++i) {
+      printf("N_eps for node %d: %d\n", i, N_eps[i]);
     }
-    printf("\n");
+
+    // show Cluster
+    int clus = 0;
+    for (auto C: Cluster) {
+      printf("Cluster %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
+      printf("\n");
+    }
   }
   
   printf("end\n");
