@@ -106,7 +106,8 @@ static inline void trim(std::string &s) {
 }
 
 int main() {
-  const string data_set = "input.txt";
+  const string data_set = "facebook_combined.txt";
+  // const string data_set = "twitter_combined.txt";
   int num_V = 0, num_E = 0;
 
   // read graph data from file
@@ -121,7 +122,9 @@ int main() {
       num_V = max({num_V, u, v});
       if (line.size() == 0) continue;
       ++num_E;
-      printf("See: u = %d, v = %d, line size = %d\n", u, v, line.size());
+      DEBUG {
+        printf("See: u = %d, v = %d, line size = %d\n", u, v, line.size());
+      }
     }
     scan_data.close();
   } else {  
@@ -129,7 +132,7 @@ int main() {
     return 0;
   }
 
-  printf("[Complete] scan dataset\n");
+  printf("[Complete] scan dataset from\"%s\"\n", data_set.c_str());
   printf("Number of Nodes: %d\n", num_V + 1);
   printf("Number of Edges: %d\n", num_E);
 
