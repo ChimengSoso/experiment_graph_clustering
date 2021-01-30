@@ -108,10 +108,10 @@ static inline void trim(std::string &s) {
 int main() {
 
   // const string data_set = "RO_edges.csv";
-  // const string data_set = "HU_edges.csv";
+  const string data_set = "HU_edges.csv";
   // const string data_set = "HR_edges.csv";
   // const string data_set = "input.txt";
-  const string data_set = "soc-Epinions1.txt";
+  // const string data_set = "soc-Epinions1.txt";
   // const string data_set = "facebook_combined.txt";
   // const string data_set = "twitter_combined.txt"; // very many of nodes
   // const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
@@ -151,8 +151,9 @@ int main() {
 
       // calculate loading file status
       int loadnow = scan_data.tellg();
-      if (load_step >= 300) {
+      if (load_step >= 50) {
         printf("\r[Status] Loading %.4f%%    ", 100. * loadnow / file_size);
+        fflush(stdout);
         load_step = 0;
       } else {
         ++load_step;
@@ -163,11 +164,12 @@ int main() {
     cout << "[Fail] to scan datset \"" << data_set << "\"\n";
     return 0;
   }
-  printf("\r[Status] Loading 100%%       ");
-  printf("\n[Complete] scan dataset from \"%s\"\n", data_set.c_str());
+  printf("\r[Status] Loaded: 100%%         \n");
+  printf("[Complete] scan dataset from \"%s\"\n", data_set.c_str());
   printf("[Info] number of Nodes: %d\n", num_V + 1);
   printf("[Info] number of Edges: %d\n\n", num_E);
-
+  printf("[Report] calculating time for algorithm 1 ...");
+  fflush(stdout);
 
   ifstream in(data_set);
 
@@ -266,7 +268,7 @@ int main() {
 
   // Finish Time for algorithm 1
   t = clock() - t;
-  printf("Time for algorithm 1: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+  printf("\r[Report] time for algorithm 1: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
 
   DEBUG {
   
@@ -287,6 +289,8 @@ int main() {
   }
   
   printf("=================================\n");
+  printf("[Report] calculating time for algorithm 2 ...");
+  fflush(stdout);
 
   // Reset everything
   for (int i = 0; i <= num_V; ++i) {
@@ -328,9 +332,9 @@ int main() {
 
   // Finish Time for algorithm 1
   t = clock() - t;
-  printf("Time for algorithm 2: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+  printf("\r[Report] time for algorithm 2: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
 
-  printf("end\n");
+  printf("\n\n...END\n");
   scanf(" ");
   return 0;
 
