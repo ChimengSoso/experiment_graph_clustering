@@ -54,10 +54,36 @@ int fast_intersect(const vector<int>& a, const vector<int>& b) {
   }
 }
 
+
 vector<int>* adj;
 pair<int, int>* edge;
-int* visit, *d;
+bool* visit;
+int *d;
 map<pair<int, int>, double> sigma;
+int* N_eps;
+
+const double mu = 4, epsilon = 0.7;
+
+void cluster(int s, set<int>& C) {
+  queue<int> q;
+  q.push(s);
+
+  while (q.size()) {
+    int u = q.front(); q.pop();
+    if (!visit[u] && N_eps[u] >= mu) {
+      visit[u] = true;
+      C.insert(u);
+      for (int v: adj[u]) {
+        if (sigma[{u, v}] >= epsilon) {
+          q.push(v);
+
+          // Union node that may core or non-core
+          C.insert(v);
+        }
+      }
+    }
+  }
+}
 
 int main() {
   int num_V = 12;
@@ -66,8 +92,9 @@ int main() {
   // allocate external memory
   adj = new vector<int>[num_V + 1];
   edge = new pair<int, int>[num_E + 1];
-  visit = new int[num_V + 1];
+  visit = new bool[num_V + 1]();
   d = new int[num_V + 1];
+  N_eps = new int[num_V + 1];
 
   // read graph data from file
   string line;
@@ -128,20 +155,48 @@ int main() {
     sigma[{v, u}] = sigma[{u, v}];
   }
 
-  t = clock() - t;
-  cout << "Time for algorithm 1: " << 1.00 * t / CLOCKS_PER_SEC << "\n";
 
-  for (int i = 0; i < num_E; ++i) {
-    int u = edge[i].first, v = edge[i].second;
-    printf("node %d, %d: %.2f\n", u, v, sigma[{u, v}]);
+  // Memoization N_eps
+  for (int u = 0; u <= num_V; ++u) {
+    int count = 0;
+    for (int v: adj[u]) {
+      if (u == v || sigma[{u, v}] >= epsilon)
+        ++count;
+    }
+    N_eps[u] = count;
   }
+
+  // Make cluster
+  set<set<int>> Cluster;
+  for (int u = 0; u <= num_V; ++u) {
+    set<int> C;
+    if (!visit[u]) {
+      cluster(u, C);
+      if (C.size() > 1)
+        Cluster.insert(C);
+    }
+  }
+
+  // Finish Time for algorithm 1
+  t = clock() - t;
+  printf("Time for algorithm 1: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+
+  // Show N_eps
+  for (int i = 0; i <= num_V; ++i) {
+    printf("N_eps for node %d: %d\n", i, N_eps[i]);
+  }
+
+  // show Cluster
+  int clus = 0;
+  for (auto C: Cluster) {
+    printf("Cluster %d:", ++clus);
+    for (int node: C) {
+      printf(" %d", node);
+    }
+    printf("\n");
+  }
+  
+  printf("end\n");
   return 0;
 
 }
-
-
-
-
-
-
-
