@@ -106,7 +106,8 @@ static inline void trim(std::string &s) {
 }
 
 int main() {
-  const string data_set = "facebook_combined.txt";
+  const string data_set = "soc-Epinions1.txt";
+  // const string data_set = "facebook_combined.txt";
   // const string data_set = "twitter_combined.txt";
   int num_V = 0, num_E = 0;
 
@@ -117,10 +118,12 @@ int main() {
     int u, v;
     while (getline(scan_data, line)) {
       trim(line);
+      if (line.size() == 0) continue;
+      if (! ('0' <= line[0] && line[0] <= '9')) continue;
+      if (! ('0' <= line.back() && line.back() <= '9')) continue;
       istringstream iss(line);
       iss >> u >> v;
       num_V = max({num_V, u, v});
-      if (line.size() == 0) continue;
       ++num_E;
       DEBUG {
         printf("See: u = %d, v = %d, line size = %d\n", u, v, line.size());
@@ -170,14 +173,18 @@ int main() {
   if (in.is_open()) {
     int u, v;
     while (getline(in, line)) {
+      trim(line);
+      if (line.size() == 0) continue;
+      if (! ('0' <= line[0] && line[0] <= '9')) continue;
+      if (! ('0' <= line.back() && line.back() <= '9')) continue;
+
       istringstream iss(line);
       iss >> u >> v;
       adj[u].push_back(v);
       adj[v].push_back(u);
       adj[u].shrink_to_fit();
       adj[v].shrink_to_fit();
-      if (line.size() != 0)
-        edge[idx_edge++] = make_pair(u, v);
+      edge[idx_edge++] = make_pair(u, v);
     }
     in.close();
   } else {
@@ -214,7 +221,8 @@ int main() {
     } else {
       if (d[u] < d[v]) swap(u, v);
       double alpha = 1.0 * d[u] / d[v];
-      if (pow(2., 1 + alpha) / alpha <= d[v]) {
+      // if (pow(2., 1 + alpha) / alpha <= d[v]) {
+      if (1 + alpha <= log2(alpha) + log2(d[v])) {
         sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
       } else {
         sigma[{u, v}] = fast_intersect(adj[v], adj[u]) / sqrt(d[u] * d[v]);
