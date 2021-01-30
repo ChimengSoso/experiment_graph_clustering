@@ -60,8 +60,8 @@ int* visit, *d;
 map<pair<int, int>, double> sigma;
 
 int main() {
-  int num_V = 9;
-  int num_E = 11;
+  int num_V = 12;
+  int num_E = 18;
   
   // allocate external memory
   adj = new vector<int>[num_V + 1];
@@ -130,6 +130,11 @@ int main() {
 
   t = clock() - t;
   cout << "Time for algorithm 1: " << 1.00 * t / CLOCKS_PER_SEC << "\n";
+
+  for (int i = 0; i < num_E; ++i) {
+    int u = edge[i].first, v = edge[i].second;
+    printf("node %d, %d: %.2f\n", u, v, sigma[{u, v}]);
+  }
   return 0;
 
 }
