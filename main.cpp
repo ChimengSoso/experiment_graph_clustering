@@ -107,14 +107,15 @@ static inline void trim(std::string &s) {
 
 int main() {
 
-  const string data_set = "RO_edges.csv";
+  // const string data_set = "RO_edges.csv";
   // const string data_set = "HU_edges.csv";
   // const string data_set = "HR_edges.csv";
   // const string data_set = "input.txt";
-  // const string data_set = "soc-Epinions1.txt";
+  const string data_set = "soc-Epinions1.txt";
   // const string data_set = "facebook_combined.txt";
-  // const string data_set = "twitter_combined.txt";
+  // const string data_set = "twitter_combined.txt"; // very many of nodes
   // const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
+  printf("[Preparing] load dataset...");
 
   // twitter graph
   // int num_V = 41652230;
@@ -127,7 +128,13 @@ int main() {
   string line;
   ifstream scan_data(data_set);
   if (scan_data.is_open()) {
+    // get size of file
+    scan_data.seekg(0, scan_data.end);
+    int file_size = scan_data.tellg();
+    scan_data.seekg(0, scan_data.beg);
+
     int u, v;
+    int load_step = 0;
     while (getline(scan_data, line)) {
       replace(line.begin(), line.end(), ',', ' ');
       trim(line);
@@ -141,16 +148,25 @@ int main() {
       DEBUG {
         printf("See: u = %d, v = %d, line size = %d\n", u, v, line.size());
       }
+
+      // calculate loading file status
+      int loadnow = scan_data.tellg();
+      if (load_step >= 300) {
+        printf("\r[Status] Loading %.4f%%    ", 100. * loadnow / file_size);
+        load_step = 0;
+      } else {
+        ++load_step;
+      }
     }
     scan_data.close();
   } else {  
     cout << "[Fail] to scan datset \"" << data_set << "\"\n";
     return 0;
   }
-
-  printf("[Complete] scan dataset from\"%s\"\n", data_set.c_str());
-  printf("Number of Nodes: %d\n", num_V + 1);
-  printf("Number of Edges: %d\n", num_E);
+  printf("\r[Status] Loading 100%%       ");
+  printf("\n[Complete] scan dataset from \"%s\"\n", data_set.c_str());
+  printf("[Info] number of Nodes: %d\n", num_V + 1);
+  printf("[Info] number of Edges: %d\n\n", num_E);
 
 
   ifstream in(data_set);
@@ -315,6 +331,7 @@ int main() {
   printf("Time for algorithm 2: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
 
   printf("end\n");
+  scanf(" ");
   return 0;
 
 }
