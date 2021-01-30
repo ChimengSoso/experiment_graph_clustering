@@ -42,3 +42,4 @@ Thumbs.
 *.out
 *.sol
 *.exe.stackdump
+*.csv
