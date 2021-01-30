@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int merge_base(int *a, int *b, int n, int m) {
+int merge_base(const vector<int>& a, const vector<int>& b, int n, int m) {
   int c = 0, i = 0, j = 0;
   while (i < n && j < m) {
     if (a[i] < b[j]) ++i;
@@ -11,11 +11,11 @@ int merge_base(int *a, int *b, int n, int m) {
   return c;
 }    
 
-int bsearch(int val, int *a, int l, int r) {
-  return lower_bound(a + l, a + r + 1, val) - a;
+int bsearch(int val, const vector<int>& a, int l, int r) {
+  return lower_bound(a.begin() + l, a.begin() + r + 1, val) - a.begin();
 }
 
-int intersect(int *a, int *b, int la, int ra, int lb, int rb) {
+int intersect(const vector<int>& a, const vector<int>& b, int la, int ra, int lb, int rb) {
   if (la > ra || lb > rb) return 0;
 
   int mid_b = (lb + rb + 1) >> 1, c = 0;
@@ -41,7 +41,7 @@ int intersect(int *a, int *b, int la, int ra, int lb, int rb) {
   return c;
 }
 
-int fast_intersect(int *a, int *b, int n, int m) {
+int fast_intersect(const vector<int>& a, const vector<int>& b, int n, int m) {
   if (n > m) {
     return intersect(a, b, 0, n - 1, 0, m - 1);
   } else {
@@ -52,4 +52,12 @@ int fast_intersect(int *a, int *b, int n, int m) {
 int main() {
   
   return 0;
+
 }
+
+
+
+
+
+
+
