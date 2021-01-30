@@ -1,9 +1,11 @@
 #include <bits/stdc++.h>
-#define DEBUG 0
+#define DEBUG if (0)
 using namespace std;
 
-int merge_base(const vector<int>& a, const vector<int>& b, int n, int m) {
+int merge_base(const vector<int>& a, const vector<int>& b) {
   int c = 0, i = 0, j = 0;
+  int n = (int) a.size();
+  int m = (int) b.size();
   while (i < n && j < m) {
     if (a[i] < b[j]) ++i;
     else if (a[i] > b[j]) ++j;
@@ -42,7 +44,9 @@ int intersect(const vector<int>& a, const vector<int>& b, int la, int ra, int lb
   return c;
 }
 
-int fast_intersect(const vector<int>& a, const vector<int>& b, int n, int m) {
+int fast_intersect(const vector<int>& a, const vector<int>& b) {
+  int n = (int) a.size();
+  int m = (int) b.size();
   if (n > m) {
     return intersect(a, b, 0, n - 1, 0, m - 1);
   } else {
@@ -52,7 +56,8 @@ int fast_intersect(const vector<int>& a, const vector<int>& b, int n, int m) {
 
 vector<int>* adj;
 pair<int, int>* edge;
-int* visit;
+int* visit, *d;
+map<pair<int, int>, double> sigma;
 
 int main() {
   int num_V = 9;
@@ -61,14 +66,16 @@ int main() {
   // allocate external memory
   adj = new vector<int>[num_V + 1];
   edge = new pair<int, int>[num_E + 1];
-  visit = new int[num_V] + 1;
+  visit = new int[num_V + 1];
+  d = new int[num_V + 1];
 
   // read graph data from file
   string line;
   ifstream in("input.txt");
+  
+  int idx_edge = 0;
   if (in.is_open()) {
     int u, v;
-    int idx_edge = 0;
     while ( getline(in, line)) {
       istringstream iss(line);
       iss >> u >> v;
@@ -82,11 +89,11 @@ int main() {
   }
 
   // sort adj list of each node
-  for (int i = 1; i <= num_V; ++i) {
+  for (int i = 0; i <= num_V; ++i) {
     adj[i].push_back(i);
     sort(adj[i].begin(), adj[i].end());
-    
-    if (DEBUG) {
+    d[i] = (int) adj[i].size();
+    DEBUG {
       printf("node %d:", i);
       for (auto elm : adj[i]) {
         printf(" %d", elm);
@@ -94,6 +101,35 @@ int main() {
       printf("\n");
     }
   }
+
+  // Check error dataset
+  if (num_E != idx_edge) {
+    printf("Error number of Edge");
+    assert(false);
+  }
+
+  // Start Time for algorithm 1
+  clock_t t = clock();
+
+  // Calculating sigma cost
+  for (int i = 0; i < num_E; ++i) {
+    int u = edge[i].first, v = edge[i].second;
+    if (d[u] <= 2 || d[v] <= 2) {
+      sigma[{u, v}] = min(d[u], d[v]) / sqrt(d[u] * d[v]);
+    } else {
+      if (d[u] < d[v]) swap(u, v);
+      double alpha = 1.0 * d[u] / d[v];
+      if (pow(2., 1 + alpha) / alpha <= d[v]) {
+        sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+      } else {
+        sigma[{u, v}] = fast_intersect(adj[v], adj[u]) / sqrt(d[u] * d[v]);
+      }
+    }
+    sigma[{v, u}] = sigma[{u, v}];
+  }
+
+  t = clock() - t;
+  cout << "Time for algorithm 1: " << 1.00 * t / CLOCKS_PER_SEC << "\n";
   return 0;
 
 }
