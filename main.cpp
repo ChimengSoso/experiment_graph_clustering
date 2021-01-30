@@ -85,7 +85,54 @@ void cluster(int s, set<int>& C) {
   }
 }
 
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+    return !std::isspace(ch);
+  }));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+    return !std::isspace(ch);
+  }).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+  ltrim(s);
+  rtrim(s);
+}
+
 int main() {
+  const string data_set = "input.txt";
+  int num_V = 0, num_E = 0;
+
+  // read graph data from file
+  string line;
+  ifstream scan_data(data_set);
+  if (scan_data.is_open()) {
+    int u, v;
+    while (getline(scan_data, line)) {
+      trim(line);
+      istringstream iss(line);
+      iss >> u >> v;
+      num_V = max({num_V, u, v});
+      if (line.size() == 0) continue;
+      ++num_E;
+      printf("See: u = %d, v = %d, line size = %d\n", u, v, line.size());
+    }
+    scan_data.close();
+  } else {  
+    cout << "[Fail] to scan datset" << "\n";
+    return 0;
+  }
+
+  printf("[Complete] scan dataset\n");
+  printf("Number of Nodes: %d\n", num_V + 1);
+  printf("Number of Edges: %d\n", num_E);
+
   // twitter graph
   // int num_V = 41652230;
   // int num_E = 1468364884;
@@ -97,10 +144,17 @@ int main() {
   // ifstream in("input.txt");
 
   // facebook graph
-  int num_V = 4039;
-  int num_E = 88234;
-  ifstream in("facebook_combined.txt");
-  
+  // int num_V = 4039;
+  // int num_E = 88234;
+  // ifstream in("facebook_combined.txt");
+
+  // twiiter graph small
+  // int num_V = 81306;
+  // int num_E = 1768149;
+  // ifstream in("twitter_combined.txt");
+
+  ifstream in(data_set);
+
   // allocate external memory
   adj = new vector<int>[num_V + 1];
   edge = new pair<int, int>[num_E + 1];
@@ -108,9 +162,6 @@ int main() {
   d = new int[num_V + 1];
   N_eps = new int[num_V + 1];
 
-  // read graph data from file
-  string line;
-  
   
   int idx_edge = 0;
   if (in.is_open()) {
@@ -122,17 +173,23 @@ int main() {
       adj[v].push_back(u);
       adj[u].shrink_to_fit();
       adj[v].shrink_to_fit();
-      edge[idx_edge++] = make_pair(u, v);
+      if (line.size() != 0)
+        edge[idx_edge++] = make_pair(u, v);
     }
     in.close();
   } else {
     cout << "Unable to open file" << "\n";
+    return 0;
   }
 
   // sort adj list of each node
   for (int i = 0; i <= num_V; ++i) {
     adj[i].push_back(i);
+    
     sort(adj[i].begin(), adj[i].end());
+    adj[i].resize(unique(adj[i].begin(), adj[i].end()) - adj[i].begin());
+    adj[i].shrink_to_fit();
+
     d[i] = (int) adj[i].size();
     DEBUG {
       printf("node %d:", i);
@@ -141,12 +198,6 @@ int main() {
       }
       printf("\n");
     }
-  }
-
-  // Check error dataset
-  if (num_E != idx_edge) {
-    printf("Error number of Edge");
-    assert(false);
   }
 
   // Start Time for algorithm 1 (Chi algorithm)
