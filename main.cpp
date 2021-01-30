@@ -106,9 +106,21 @@ static inline void trim(std::string &s) {
 }
 
 int main() {
-  const string data_set = "soc-Epinions1.txt";
+
+  const string data_set = "RO_edges.csv";
+  // const string data_set = "HU_edges.csv";
+  // const string data_set = "HR_edges.csv";
+  // const string data_set = "input.txt";
+  // const string data_set = "soc-Epinions1.txt";
   // const string data_set = "facebook_combined.txt";
   // const string data_set = "twitter_combined.txt";
+  // const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
+
+  // twitter graph
+  // int num_V = 41652230;
+  // int num_E = 1468364884;
+  // ifstream in("twitter-2010.txt");
+  
   int num_V = 0, num_E = 0;
 
   // read graph data from file
@@ -117,6 +129,7 @@ int main() {
   if (scan_data.is_open()) {
     int u, v;
     while (getline(scan_data, line)) {
+      replace(line.begin(), line.end(), ',', ' ');
       trim(line);
       if (line.size() == 0) continue;
       if (! ('0' <= line[0] && line[0] <= '9')) continue;
@@ -131,7 +144,7 @@ int main() {
     }
     scan_data.close();
   } else {  
-    cout << "[Fail] to scan datset" << "\n";
+    cout << "[Fail] to scan datset \"" << data_set << "\"\n";
     return 0;
   }
 
@@ -139,25 +152,6 @@ int main() {
   printf("Number of Nodes: %d\n", num_V + 1);
   printf("Number of Edges: %d\n", num_E);
 
-  // twitter graph
-  // int num_V = 41652230;
-  // int num_E = 1468364884;
-  // ifstream in("twitter-2010.txt");
-
-  // input.txt
-  // int num_V = 12;
-  // int num_E = 18;
-  // ifstream in("input.txt");
-
-  // facebook graph
-  // int num_V = 4039;
-  // int num_E = 88234;
-  // ifstream in("facebook_combined.txt");
-
-  // twiiter graph small
-  // int num_V = 81306;
-  // int num_E = 1768149;
-  // ifstream in("twitter_combined.txt");
 
   ifstream in(data_set);
 
@@ -173,6 +167,7 @@ int main() {
   if (in.is_open()) {
     int u, v;
     while (getline(in, line)) {
+      replace(line.begin(), line.end(), ',', ' ');
       trim(line);
       if (line.size() == 0) continue;
       if (! ('0' <= line[0] && line[0] <= '9')) continue;
