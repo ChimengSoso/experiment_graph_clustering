@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#define DEBUG 0
 using namespace std;
 
 int merge_base(const vector<int>& a, const vector<int>& b, int n, int m) {
@@ -82,13 +83,16 @@ int main() {
 
   // sort adj list of each node
   for (int i = 1; i <= num_V; ++i) {
-    printf("node %d:", i);
     adj[i].push_back(i);
     sort(adj[i].begin(), adj[i].end());
-    for (auto elm : adj[i]) {
-      printf(" %d", elm);
+    
+    if (DEBUG) {
+      printf("node %d:", i);
+      for (auto elm : adj[i]) {
+        printf(" %d", elm);
+      }
+      printf("\n");
     }
-    printf("\n");
   }
   return 0;
 
