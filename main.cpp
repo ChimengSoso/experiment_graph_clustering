@@ -49,8 +49,47 @@ int fast_intersect(const vector<int>& a, const vector<int>& b, int n, int m) {
   }
 }
 
+vector<int>* adj;
+pair<int, int>* edge;
+int* visit;
+
 int main() {
+  int num_V = 9;
+  int num_E = 11;
   
+  // allocate external memory
+  adj = new vector<int>[num_V + 1];
+  edge = new pair<int, int>[num_E + 1];
+  visit = new int[num_V] + 1;
+
+  // read graph data from file
+  string line;
+  ifstream in("input.txt");
+  if (in.is_open()) {
+    int u, v;
+    int idx_edge = 0;
+    while ( getline(in, line)) {
+      istringstream iss(line);
+      iss >> u >> v;
+      adj[u].push_back(v);
+      adj[v].push_back(u);
+      edge[idx_edge++] = make_pair(u, v);
+    }
+    in.close();
+  } else {
+    cout << "Unable to open file" << "\n";
+  }
+
+  // sort adj list of each node
+  for (int i = 1; i <= num_V; ++i) {
+    printf("node %d:", i);
+    adj[i].push_back(i);
+    sort(adj[i].begin(), adj[i].end());
+    for (auto elm : adj[i]) {
+      printf(" %d", elm);
+    }
+    printf("\n");
+  }
   return 0;
 
 }
