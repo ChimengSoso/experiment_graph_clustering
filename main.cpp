@@ -107,6 +107,9 @@ static inline void trim(std::string &s) {
 
 int main() {
 
+  string data_set = "roadNet-TX.txt";
+  // string data_set = "roadNet-PA.txt";
+  // string data_set = "roadNet-CA.txt";
   // const string data_set = "input.txt";
   // const string data_set = "RO_edges.csv";
   // const string data_set = "HU_edges.csv";
@@ -114,8 +117,10 @@ int main() {
   // const string data_set = "soc-Epinions1.txt";
   // const string data_set = "facebook_combined.txt";
   // const string data_set = "twitter_combined.txt"; // very many of nodes
-  const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
+  // const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
   
+  // add path
+  data_set = "dataset/" + data_set;
 
   // twitter graph
   // int num_V = 41652230;
