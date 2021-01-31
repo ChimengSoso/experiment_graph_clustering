@@ -145,7 +145,7 @@ int main() {
     fflush(stdout);
 
     int u, v;
-    int load_step = 0;
+    long long load_step = 0;
     while (getline(scan_data, line)) {
       replace(line.begin(), line.end(), ',', ' ');
       trim(line);
@@ -161,7 +161,7 @@ int main() {
       }
 
       // calculate loading file status
-      int loadnow = scan_data.tellg();
+      long long loadnow = scan_data.tellg();
       if (load_step >= 50) {
         printf("\r[Status] Loading %.4f%%    ", 100. * loadnow / file_size);
         fflush(stdout);
