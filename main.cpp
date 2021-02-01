@@ -108,8 +108,8 @@ static inline void trim(std::string &s) {
 int main() {
 
   // string data_set = "musae_chameleon_edges.csv"; 
-  string data_set = "musae_crocodile_edges.csv"; 
-  // string data_set = "musae_squirrel_edges.csv"; 
+  // string data_set = "musae_crocodile_edges.csv"; // Success 
+  // string data_set = "musae_squirrel_edges.csv";  // Almost Success
   // string data_set = "roadNet-TX.txt"; 
   // string data_set = "roadNet-PA.txt";
   // string data_set = "roadNet-CA.txt";
