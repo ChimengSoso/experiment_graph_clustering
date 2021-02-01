@@ -107,20 +107,22 @@ static inline void trim(std::string &s) {
 
 int main() {
 
+  // string data_set = "input.txt";
+  // string data_set = "Brightkite_edges.txt";
+  string data_set = "Gowalla_edges.txt";
   // string data_set = "musae_chameleon_edges.csv"; 
   // string data_set = "musae_crocodile_edges.csv"; // Success 
   // string data_set = "musae_squirrel_edges.csv";  // Almost Success
   // string data_set = "roadNet-TX.txt"; 
   // string data_set = "roadNet-PA.txt";
   // string data_set = "roadNet-CA.txt";
-  // const string data_set = "input.txt";
-  // const string data_set = "RO_edges.csv";
-  // const string data_set = "HU_edges.csv";
-  // const string data_set = "HR_edges.csv";
-  // const string data_set = "soc-Epinions1.txt";
-  // const string data_set = "facebook_combined.txt";
-  // const string data_set = "twitter_combined.txt"; // very many of nodes
-  // const string data_set = "twitter-2010.txt"; // very super ultimate so big graph
+  // string data_set = "RO_edges.csv";
+  // string data_set = "HU_edges.csv";
+  // string data_set = "HR_edges.csv";
+  // string data_set = "soc-Epinions1.txt";
+  // string data_set = "facebook_combined.txt";
+  // string data_set = "twitter_combined.txt"; // very many of nodes
+  // string data_set = "twitter-2010.txt"; // very super ultimate so big graph
   
   // add path
   data_set = "dataset/" + data_set;
