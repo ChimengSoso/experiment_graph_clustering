@@ -107,8 +107,25 @@ static inline void trim(std::string &s) {
 
 int main() {
 
-  // string data_set = "input.txt";
-  string data_set = "as20000102.txt"; // Success
+  string data_set = "input.txt";
+  // string data_set = "com-youtube.ungraph.txt";  // Success
+  // string data_set = "com-amazon.ungraph.txt";
+  // string data_set = "Email-Enron.txt";
+  // string data_set = "CA-HepTh.txt";
+  // string data_set = "CA-GrQc.txt";
+  // string data_set = "CA-CondMat.txt";
+  // string data_set = "CA-HepPh.txt";
+  // string data_set = "CA-AstroPh.txt";
+  // string data_set = "oregon1_010526.txt";
+  // string data_set = "oregon1_010519.txt"; // Success
+  // string data_set = "oregon1_010505.txt";
+  // string data_set = "oregon1_010512.txt";
+  // string data_set = "oregon1_010428.txt"; // Success
+  // string data_set = "oregon1_010421.txt"; // Success
+  // string data_set = "oregon2_010414.txt"; // Success
+  // string data_set = "oregon2_010407.txt";
+  // string data_set = "oregon1_010331.txt"; // Success
+  // string data_set = "as20000102.txt"; // Success
   // string data_set = "as-skitter.txt"; // Success
   // string data_set = "Brightkite_edges.txt";
   // string data_set = "Gowalla_edges.txt"; // Success
@@ -125,7 +142,7 @@ int main() {
   // string data_set = "facebook_combined.txt";
   // string data_set = "twitter_combined.txt"; // very many of nodes
   // string data_set = "twitter-2010.txt"; // very super ultimate so big graph
-  
+
   // add path
   data_set = "dataset/" + data_set;
 
