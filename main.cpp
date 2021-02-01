@@ -108,8 +108,10 @@ static inline void trim(std::string &s) {
 int main() {
 
   // string data_set = "input.txt";
+  string data_set = "as20000102.txt"; // Success
+  // string data_set = "as-skitter.txt"; // Success
   // string data_set = "Brightkite_edges.txt";
-  string data_set = "Gowalla_edges.txt";
+  // string data_set = "Gowalla_edges.txt"; // Success
   // string data_set = "musae_chameleon_edges.csv"; 
   // string data_set = "musae_crocodile_edges.csv"; // Success 
   // string data_set = "musae_squirrel_edges.csv";  // Almost Success
