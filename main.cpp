@@ -360,7 +360,7 @@ int main() {
   }
 
   // Make cluster
-   Cluster = set<set<int>>();
+  Cluster = set<set<int>>();
   for (int u = 0; u <= num_V; ++u) {
     set<int> C;
     if (!visit[u]) {
@@ -376,6 +376,9 @@ int main() {
 
   printf("\n\n...END\n");
   scanf(" ");
-  return 0;
 
+
+  
+
+  return 0;
 }
