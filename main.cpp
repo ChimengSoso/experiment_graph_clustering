@@ -461,16 +461,16 @@ int main() {
       cluster_core.insert(C);
     }
   }
-  
-  int clus = 0;
-  for (auto C: cluster_core) {
-    printf("\nCluster of core %d:", ++clus);
-    for (int node: C) {
-      printf(" %d", node);
+  DEBUG {
+    int clus = 0;
+    for (auto C: cluster_core) {
+      printf("\nCluster of core %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
     }
+    printf("\n");
   }
-  printf("\n");
-
   // Finish Time for algorithm 3
   t = clock() - t;
   printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
