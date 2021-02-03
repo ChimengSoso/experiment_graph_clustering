@@ -13,6 +13,7 @@
 
 #include "utility.hpp"
 #define DEBUG if (0)
+#define SHOWCLUSTER if (0)
 
 const double mu = 4, epsilon = 0.7;
 
@@ -61,6 +62,7 @@ void CheckCore(int u) {
     for (int v: adj[u]) {
       // Compute sigma(u, v)
       sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+      sigma[{v, u}] = sigma[{u, v}];
 
       if (sigma[{u, v}] >= epsilon) {
         sd[u] = sd[u] + 1;
@@ -92,8 +94,7 @@ void CheckCore(int u) {
 void ClusterCore(int u) {
   std::vector<int> Nplam_u;
   for (int v: adj[u]) {
-    if (sigma[{u, v}] != 0) {
-      // sigma(u, v) is computed
+    if (sigma[{u, v}] != 0) { // sigma(u, v) is computed
       Nplam_u.push_back(v);
     }
   }
@@ -119,7 +120,8 @@ void ClusterCore(int u) {
     if (dsu.find_set(u) != dsu.find_set(v) && ed[v] >= mu) {
       // computed sigma(u, v)
       sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
-      
+      sigma[{v, u}] = sigma[{u, v}];
+
       if (!visit[v]) {
         if (sigma[{u, v}] >= epsilon) sd[v] = sd[v] + 1;
         else {
@@ -338,28 +340,30 @@ int main() {
     }
   }
 
-  // Finish Time for algorithm 1 (Chi algorithm)
-  t = clock() - t;
-  printf("\r[Report] time for algorithm Chi: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
 
   DEBUG {
-  
     // Show N_eps
     for (int i = start_idx; i <= num_V + start_idx; ++i) {
       printf("N_eps for node %d: %d\n", i, N_eps[i]);
     }
+  }
 
+  SHOWCLUSTER {
     // show Cluster
     int clus = 0;
     for (auto C: Cluster) {
-      printf("Cluster %d:", ++clus);
+      printf("\nCluster of Chi %d:", ++clus);
       for (int node: C) {
         printf(" %d", node);
       }
-      printf("\n");
     }
-  }
-  
+    printf("\n");
+  } 
+
+  // Finish Time for algorithm 1 (Chi algorithm)
+  t = clock() - t;
+
+  printf("\r[Report] time for algorithm Chi: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
   printf("=================================================\n");
   printf("[Report] calculating time for algorithm SCAN ...");
   fflush(stdout);
@@ -400,6 +404,17 @@ int main() {
       if (C.size() > 1)
         Cluster.insert(C);
     }
+  }
+
+  SHOWCLUSTER {
+    int clus = 0;
+    for (auto C: Cluster) {
+      printf("\nCluster of SCAN %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
+    }
+    printf("\n");
   }
 
   // Finish Time for algorithm 2
@@ -471,6 +486,38 @@ int main() {
     }
     printf("\n");
   }
+
+  // Cluster Noncore
+  Cluster = std::set<std::set<int>>();
+  for (auto Cc: cluster_core) {
+    std::set<int> C = Cc;
+    for (int u: Cc) {
+      for (int v: adj[u]) {
+        if (sd[v] < mu && C.find(v) == C.end()) {
+          if (sigma[{u, v}] == 0) {
+            sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+            sigma[{v, u}] = sigma[{u, v}];
+          }
+          if (sigma[{u, v}] >= epsilon) {
+            C.insert(v);
+          }
+        }
+      }
+    }
+    Cluster.insert(C);
+  }
+
+  SHOWCLUSTER {
+    int clus = 0;
+    for (auto C: Cluster) {
+      printf("\nCluster of pSCAN %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
+    }
+    printf("\n");
+  }
+
   // Finish Time for algorithm 3
   t = clock() - t;
   printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
