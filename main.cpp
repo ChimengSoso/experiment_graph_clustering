@@ -1,71 +1,28 @@
-#include <bits/stdc++.h>
-#define DEBUG if (0)
-using namespace std;
+#include <algorithm>
+#include <vector>
+#include <queue>
+#include <set>
+#include <map>
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <cstdio>
+#include "utility.hpp"
+#define DEBUG if (1)
 
-int merge_base(const vector<int>& a, const vector<int>& b) {
-  int c = 0, i = 0, j = 0;
-  int n = (int) a.size();
-  int m = (int) b.size();
-  while (i < n && j < m) {
-    if (a[i] < b[j]) ++i;
-    else if (a[i] > b[j]) ++j;
-    else ++c, ++i, ++j;
-  }
-  return c;
-}    
-
-int bsearch(int val, const vector<int>& a, int l, int r) {
-  return lower_bound(a.begin() + l, a.begin() + r + 1, val) - a.begin();
-}
-
-int intersect(const vector<int>& a, const vector<int>& b, int la, int ra, int lb, int rb) {
-  if (la > ra || lb > rb) return 0;
-
-  int mid_b = (lb + rb + 1) >> 1, c = 0;
-  int val = b[mid_b];
-  int mid_a = bsearch(val, a, la, ra);
-
-  if (mid_b - lb > mid_a - la) {
-    c = c + intersect(b, a, lb, mid_b - 1, la, mid_a - 1);
-  } else {
-    c = c + intersect(a, b, la, mid_a - 1, lb, mid_b - 1);
-  }
-
-  if (mid_a <= ra && val == a[mid_a]) {
-    c = c + 1;
-  } else if (val < a[mid_a]) mid_a = mid_a - 1;
-
-  if (ra - mid_a > rb - mid_b) {
-    c = c + intersect(a, b, mid_a + 1, ra, mid_b + 1, rb);
-  } else {
-    c = c + intersect(b, a, mid_b + 1, rb, mid_a + 1, ra);
-  }
-
-  return c;
-}
-
-int fast_intersect(const vector<int>& a, const vector<int>& b) {
-  int n = (int) a.size();
-  int m = (int) b.size();
-  if (n > m) {
-    return intersect(a, b, 0, n - 1, 0, m - 1);
-  } else {
-    return intersect(b, a, 0, m - 1, 0, n - 1);
-  }
-}
-
-
-vector<int>* adj;
-pair<int, int>* edge;
+std::vector<int>* adj;
+std::pair<int, int>* edge;
 bool* visit;
 int *d;
-map<pair<int, int>, double> sigma;
+std::map<std::pair<int, int>, double> sigma;
 int* N_eps;
 
 const double mu = 4, epsilon = 0.7;
 
-void cluster(int s, set<int>& C) {
-  queue<int> q;
+void cluster(int s, std::set<int>& C) {
+  std::queue<int> q;
   q.push(s);
 
   while (q.size()) {
@@ -85,63 +42,43 @@ void cluster(int s, set<int>& C) {
   }
 }
 
-// trim from start (in place)
-static inline void ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-    return !std::isspace(ch);
-  }));
-}
-
-// trim from end (in place)
-static inline void rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-    return !std::isspace(ch);
-  }).base(), s.end());
-}
-
-// trim from both ends (in place)
-static inline void trim(std::string &s) {
-  ltrim(s);
-  rtrim(s);
-}
-
 int main() {
 
-  string data_set = "input.txt";
-  // string data_set = "com-youtube.ungraph.txt";  // Success
-  // string data_set = "com-amazon.ungraph.txt";
-  // string data_set = "Email-Enron.txt";
-  // string data_set = "CA-HepTh.txt";
-  // string data_set = "CA-GrQc.txt";
-  // string data_set = "CA-CondMat.txt";
-  // string data_set = "CA-HepPh.txt";
-  // string data_set = "CA-AstroPh.txt";
-  // string data_set = "oregon1_010526.txt";
-  // string data_set = "oregon1_010519.txt"; // Success
-  // string data_set = "oregon1_010505.txt";
-  // string data_set = "oregon1_010512.txt";
-  // string data_set = "oregon1_010428.txt"; // Success
-  // string data_set = "oregon1_010421.txt"; // Success
-  // string data_set = "oregon2_010414.txt"; // Success
-  // string data_set = "oregon2_010407.txt";
-  // string data_set = "oregon1_010331.txt"; // Success
-  // string data_set = "as20000102.txt"; // Success
-  // string data_set = "as-skitter.txt"; // Success
-  // string data_set = "Brightkite_edges.txt";
-  // string data_set = "Gowalla_edges.txt"; // Success
-  // string data_set = "musae_chameleon_edges.csv"; 
-  // string data_set = "musae_crocodile_edges.csv"; // Success 
-  // string data_set = "musae_squirrel_edges.csv";  // Almost Success
-  // string data_set = "roadNet-TX.txt"; 
-  // string data_set = "roadNet-PA.txt";
-  // string data_set = "roadNet-CA.txt";
-  // string data_set = "RO_edges.csv";
-  // string data_set = "HU_edges.csv";
-  // string data_set = "HR_edges.csv";
-  // string data_set = "soc-Epinions1.txt";
-  // string data_set = "facebook_combined.txt";
-  // string data_set = "twitter_combined.txt"; // very many of nodes
-  // string data_set = "twitter-2010.txt"; // very super ultimate so big graph
+  std::string data_set = "input.txt";
+  // std::string data_set = "com-youtube.ungraph.txt";  // Success
+  // std::string data_set = "com-amazon.ungraph.txt";
+  // std::string data_set = "Email-Enron.txt";
+  // std::string data_set = "CA-HepTh.txt";
+  // std::string data_set = "CA-GrQc.txt";
+  // std::string data_set = "CA-CondMat.txt";
+  // std::string data_set = "CA-HepPh.txt";
+  // std::string data_set = "CA-AstroPh.txt";
+  // std::string data_set = "oregon1_010526.txt";
+  // std::string data_set = "oregon1_010519.txt"; // Success
+  // std::string data_set = "oregon1_010505.txt";
+  // std::string data_set = "oregon1_010512.txt";
+  // std::string data_set = "oregon1_010428.txt"; // Success
+  // std::string data_set = "oregon1_010421.txt"; // Success
+  // std::string data_set = "oregon2_010414.txt"; // Success
+  // std::string data_set = "oregon2_010407.txt";
+  // std::string data_set = "oregon1_010331.txt"; // Success
+  // std::string data_set = "as20000102.txt"; // Success
+  // std::string data_set = "as-skitter.txt"; // Success
+  // std::string data_set = "Brightkite_edges.txt";
+  // std::string data_set = "Gowalla_edges.txt"; // Success
+  // std::string data_set = "musae_chameleon_edges.csv"; 
+  // std::string data_set = "musae_crocodile_edges.csv"; // Success 
+  // std::string data_set = "musae_squirrel_edges.csv";  // Almost Success
+  // std::string data_set = "roadNet-TX.txt"; 
+  // std::string data_set = "roadNet-PA.txt";
+  // std::string data_set = "roadNet-CA.txt";
+  // std::string data_set = "RO_edges.csv";
+  // std::string data_set = "HU_edges.csv";
+  // std::string data_set = "HR_edges.csv";
+  // std::string data_set = "soc-Epinions1.txt";
+  // std::string data_set = "facebook_combined.txt";
+  // std::string data_set = "twitter_combined.txt"; // very many of nodes
+  // std::string data_set = "twitter-2010.txt"; // very super ultimate so big graph
 
   // add path
   data_set = "dataset/" + data_set;
@@ -154,8 +91,8 @@ int main() {
   int num_V = 0, num_E = 0;
 
   // read graph data from file
-  string line;
-  ifstream scan_data(data_set);
+  std::string line;
+  std::ifstream scan_data(data_set);
   if (scan_data.is_open()) {
     // get size of file
     scan_data.seekg(0, scan_data.end);
@@ -175,15 +112,15 @@ int main() {
 
     int u, v;
     long long load_step = 0;
-    while (getline(scan_data, line)) {
-      replace(line.begin(), line.end(), ',', ' ');
+    while (std::getline(scan_data, line)) {
+      std::replace(line.begin(), line.end(), ',', ' ');
       trim(line);
       if (line.size() == 0) continue;
       if (! ('0' <= line[0] && line[0] <= '9')) continue;
       if (! ('0' <= line.back() && line.back() <= '9')) continue;
-      istringstream iss(line);
+      std::istringstream iss(line);
       iss >> u >> v;
-      num_V = max({num_V, u, v});
+      num_V = std::max({num_V, u, v});
       ++num_E;
       DEBUG {
         printf("See: u = %d, v = %d, line size = %d\n", u, v, line.size());
@@ -201,7 +138,7 @@ int main() {
     }
     scan_data.close();
   } else {  
-    cout << "[Fail] to scan datset \"" << data_set << "\"\n";
+    std::cout << "[Fail] to scan datset \"" << data_set << "\"\n";
     return 0;
   }
   printf("\r[Status] Loaded: 100%%         \n");
@@ -211,37 +148,36 @@ int main() {
   printf("[Report] calculating time for algorithm 1 ...");
   fflush(stdout);
 
-  ifstream in(data_set);
+  std::ifstream in(data_set);
 
   // allocate external memory
-  adj = new vector<int>[num_V + 1];
-  edge = new pair<int, int>[num_E + 1];
+  adj = new std::vector<int>[num_V + 1];
+  edge = new std::pair<int, int>[num_E + 1];
   visit = new bool[num_V + 1]();
   d = new int[num_V + 1];
   N_eps = new int[num_V + 1];
 
-  
   int idx_edge = 0;
   if (in.is_open()) {
     int u, v;
-    while (getline(in, line)) {
-      replace(line.begin(), line.end(), ',', ' ');
+    while (std::getline(in, line)) {
+      std::replace(line.begin(), line.end(), ',', ' ');
       trim(line);
       if (line.size() == 0) continue;
       if (! ('0' <= line[0] && line[0] <= '9')) continue;
       if (! ('0' <= line.back() && line.back() <= '9')) continue;
 
-      istringstream iss(line);
+      std::istringstream iss(line);
       iss >> u >> v;
       adj[u].push_back(v);
       adj[v].push_back(u);
       adj[u].shrink_to_fit();
       adj[v].shrink_to_fit();
-      edge[idx_edge++] = make_pair(u, v);
+      edge[idx_edge++] = std::make_pair(u, v);
     }
     in.close();
   } else {
-    cout << "Unable to open file" << "\n";
+    std::cout << "Unable to open file" << "\n";
     return 0;
   }
 
@@ -249,7 +185,7 @@ int main() {
   for (int i = 0; i <= num_V; ++i) {
     adj[i].push_back(i);
     
-    sort(adj[i].begin(), adj[i].end());
+    std::sort(adj[i].begin(), adj[i].end());
     adj[i].resize(unique(adj[i].begin(), adj[i].end()) - adj[i].begin());
     adj[i].shrink_to_fit();
 
@@ -270,9 +206,9 @@ int main() {
   for (int i = 0; i < num_E; ++i) {
     int u = edge[i].first, v = edge[i].second;
     if (d[u] <= 2 || d[v] <= 2) {
-      sigma[{u, v}] = min(d[u], d[v]) / sqrt(d[u] * d[v]);
+      sigma[{u, v}] = std::min(d[u], d[v]) / sqrt(d[u] * d[v]);
     } else {
-      if (d[u] < d[v]) swap(u, v);
+      if (d[u] < d[v]) std::swap(u, v);
       double alpha = 1.0 * d[u] / d[v];
       // if (pow(2., 1 + alpha) / alpha <= d[v]) {
       if (1 + alpha <= log2(alpha) + log2(d[v])) {
@@ -296,9 +232,9 @@ int main() {
   }
 
   // Make cluster
-  set<set<int>> Cluster;
+  std::set<std::set<int>> Cluster;
   for (int u = 0; u <= num_V; ++u) {
-    set<int> C;
+    std::set<int> C;
     if (!visit[u]) {
       cluster(u, C);
       if (C.size() > 1)
@@ -360,9 +296,9 @@ int main() {
   }
 
   // Make cluster
-  Cluster = set<set<int>>();
+  Cluster = std::set<std::set<int>>();
   for (int u = 0; u <= num_V; ++u) {
-    set<int> C;
+    std::set<int> C;
     if (!visit[u]) {
       cluster(u, C);
       if (C.size() > 1)
@@ -376,9 +312,5 @@ int main() {
 
   printf("\n\n...END\n");
   scanf(" ");
-
-
-  
-
   return 0;
 }
