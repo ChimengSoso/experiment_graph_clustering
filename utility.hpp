@@ -16,7 +16,8 @@ int merge_base(const std::vector<int>& a, const std::vector<int>& b) {
 }    
 
 
-int intersect(const std::vector<int>& a, const std::vector<int>& b, int la, int ra, int lb, int rb) {
+int intersect(const std::vector<int>& a, const std::vector<int>& b, 
+              int la, int ra, int lb, int rb) {
   if (la > ra || lb > rb) return 0;
 
   int mid_b = (lb + rb + 1) >> 1, c = 0;
