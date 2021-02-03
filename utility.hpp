@@ -72,3 +72,21 @@ static inline void trim(std::string &s) {
   ltrim(s);
   rtrim(s);
 }
+
+namespace data_struct{
+  class DSU {
+    public: 
+      DSU(int n) {
+        parent = new int[n + 1];
+        std::iota(parent, parent + n + 1, 0);
+        all = n + 1;
+      }
+      ~DSU() {
+        delete parent;
+      }
+    private:
+      int *parent;
+      int all;
+
+  };
+}

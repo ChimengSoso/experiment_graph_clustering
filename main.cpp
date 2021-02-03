@@ -9,8 +9,10 @@
 #include <sstream>
 #include <string>
 #include <cstdio>
+#include <numeric>
+
 #include "utility.hpp"
-#define DEBUG if (1)
+#define DEBUG if (0)
 
 std::vector<int>* adj;
 std::pair<int, int>* edge;
@@ -145,7 +147,7 @@ int main() {
   printf("[Complete] scan dataset from \"%s\"\n", data_set.c_str());
   printf("[Info] number of Nodes: %d\n", num_V + 1);
   printf("[Info] number of Edges: %d\n\n", num_E);
-  printf("[Report] calculating time for algorithm 1 ...");
+  printf("[Report] calculating time for algorithm Chi ...");
   fflush(stdout);
 
   std::ifstream in(data_set);
@@ -242,9 +244,9 @@ int main() {
     }
   }
 
-  // Finish Time for algorithm 1
+  // Finish Time for algorithm 1 (Chi algorithm)
   t = clock() - t;
-  printf("\r[Report] time for algorithm 1: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+  printf("\r[Report] time for algorithm Chi: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
 
   DEBUG {
   
@@ -264,8 +266,8 @@ int main() {
     }
   }
   
-  printf("=================================\n");
-  printf("[Report] calculating time for algorithm 2 ...");
+  printf("=================================================\n");
+  printf("[Report] calculating time for algorithm SCAN ...");
   fflush(stdout);
 
   // Reset everything
@@ -306,11 +308,37 @@ int main() {
     }
   }
 
-  // Finish Time for algorithm 1
+  // Finish Time for algorithm 2
   t = clock() - t;
-  printf("\r[Report] time for algorithm 2: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+
+  printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+  printf("=================================================\n");
+  printf("[Report] calculating time for algorithm pSCAN ...");
+
+  // Start Time for algorithm 3 (pSCAN algorithm)
+  t = clock();
+  
+  // Do pscan algorithm
+  data_struct::DSU dsu(num_V + 1);
+  int* sd = new int[num_V + 1];
+  int* ed = new int[num_V + 1];
+  for (int u = 0; u <= num_V; ++u) {
+    sd[u] = 0;
+    ed[u] = d[u];
+  }
+  
+  
+  
+  // Finish Time for algorithm 3
+  t = clock() - t;
+  printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+
 
   printf("\n\n...END\n");
   scanf(" ");
+  
+  for (int i = 0; i <= num_V; ++i)
+    adj[i].clear();
+  delete adj, edge, visit, d, N_eps;
   return 0;
 }
