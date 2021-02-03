@@ -49,6 +49,11 @@ void cluster(int s, std::set<int>& C) {
 }
 
 // Use for pSCAN
+bool pSCAN_order(const int& u, const int& v) { 
+  return ed[u] != ed[v] ? ed[u] > ed[v] : u < v; 
+}
+std::set<int , decltype(&pSCAN_order)> q(&pSCAN_order);
+
 void CheckCore(int u) {
   if (ed[u] >= mu && sd[u] < mu) {
     ed[u] = d[u];
@@ -62,7 +67,11 @@ void CheckCore(int u) {
 
       if (!visit[v]) {
         if (sigma[{u, v}] >= epsilon) sd[v] = sd[v] + 1; 
-        else ed[v] = ed[v] - 1;
+        else {
+          q.erase(v);
+          ed[v] = ed[v] - 1;
+          q.insert(v);
+        }
       }
 
       if (ed[u] < mu || sd[u] >= mu) break;
@@ -101,10 +110,16 @@ void ClusterCore(int u) {
     if (dsu.find_set(u) != dsu.find_set(v) && ed[v] >= mu) {
       // computed sigma(u, v)
       sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+      
       if (!visit[v]) {
         if (sigma[{u, v}] >= epsilon) sd[v] = sd[v] + 1;
-        else ed[v] = ed[v] - 1;
+        else {
+          q.erase(v);
+          ed[v] = ed[v] - 1;
+          q.insert(v);
+        }
       }
+
       if (sd[v] >= mu && sigma[{u, v}] >= epsilon) {
         dsu.union_node(u, v);
       }
@@ -159,6 +174,7 @@ int main() {
   // ifstream in("twitter-2010.txt");
   
   int num_V = 0, num_E = 0;
+  int start_idx = 2e9;
 
   // read graph data from file
   std::string line;
@@ -191,6 +207,7 @@ int main() {
       std::istringstream iss(line);
       iss >> u >> v;
       num_V = std::max({num_V, u, v});
+      start_idx = std::min({start_idx, u, v});
       ++num_E;
       DEBUG {
         printf("See: u = %d, v = %d, line size = %d\n", u, v, line.size());
@@ -213,7 +230,7 @@ int main() {
   }
   printf("\r[Status] Loaded: 100%%         \n");
   printf("[Complete] scan dataset from \"%s\"\n", data_set.c_str());
-  printf("[Info] number of Nodes: %d\n", num_V + 1);
+  printf("[Info] number of Nodes: %d, Start node id: %d\n", num_V + 1, start_idx);
   printf("[Info] number of Edges: %d\n\n", num_E);
   printf("[Report] calculating time for algorithm Chi ...");
   fflush(stdout);
@@ -221,10 +238,10 @@ int main() {
   std::ifstream in(data_set);
 
   // allocate external memory
-  adj = new std::vector<int>[num_V + 1];
+  adj = new std::vector<int>[num_V + 1 + start_idx];
   edge = new std::pair<int, int>[num_E + 1];
-  visit = new bool[num_V + 1]();
-  d = new int[num_V + 1];
+  visit = new bool[num_V + 1 + start_idx]();
+  d = new int[num_V + 1 + start_idx];
   N_eps = new int[num_V + 1];
 
   int idx_edge = 0;
@@ -252,7 +269,7 @@ int main() {
   }
 
   // sort adj list of each node
-  for (int i = 0; i <= num_V; ++i) {
+  for (int i = start_idx; i <= num_V + start_idx; ++i) {
     adj[i].push_back(i);
     
     std::sort(adj[i].begin(), adj[i].end());
@@ -292,7 +309,7 @@ int main() {
 
 
   // Memoization N_eps
-  for (int u = 0; u <= num_V; ++u) {
+  for (int u = start_idx; u <= num_V + start_idx; ++u) {
     int count = 0;
     for (int v: adj[u]) {
       if (u == v || sigma[{u, v}] >= epsilon)
@@ -319,7 +336,7 @@ int main() {
   DEBUG {
   
     // Show N_eps
-    for (int i = 0; i <= num_V; ++i) {
+    for (int i = start_idx; i <= num_V + start_idx; ++i) {
       printf("N_eps for node %d: %d\n", i, N_eps[i]);
     }
 
@@ -339,7 +356,7 @@ int main() {
   fflush(stdout);
 
   // Reset everything
-  for (int i = 0; i <= num_V; ++i) {
+  for (int i = start_idx; i <= num_V + start_idx; ++i) {
     visit[i] = 0;
     N_eps[i] = 0;
   }
@@ -356,7 +373,7 @@ int main() {
   }
 
   // Memoization N_eps
-  for (int u = 0; u <= num_V; ++u) {
+  for (int u = start_idx; u <= num_V + start_idx; ++u) {
     int count = 0;
     for (int v: adj[u]) {
       if (u == v || sigma[{u, v}] >= epsilon)
@@ -367,7 +384,7 @@ int main() {
 
   // Make cluster
   Cluster = std::set<std::set<int>>();
-  for (int u = 0; u <= num_V; ++u) {
+  for (int u = start_idx; u <= num_V + start_idx; ++u) {
     std::set<int> C;
     if (!visit[u]) {
       cluster(u, C);
@@ -379,12 +396,12 @@ int main() {
   // Finish Time for algorithm 2
   t = clock() - t;
 
-  printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
+  printf("\r[Report] time for algorithm SCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
   printf("=================================================\n");
   printf("[Report] calculating time for algorithm pSCAN ...");
 
    // Reset everything
-  for (int i = 0; i <= num_V; ++i) {
+  for (int i = start_idx; i <= num_V + start_idx; ++i) {
     visit[i] = 0;
     N_eps[i] = 0;
   }
@@ -394,34 +411,46 @@ int main() {
   t = clock();
   
   // Do pscan algorithm
-  dsu.assign(num_V + 1);
-  sd = new int[num_V + 1];
-  ed = new int[num_V + 1];
-  for (int u = 0; u <= num_V; ++u) {
+  dsu.assign(num_V + 1 + start_idx);
+  sd = new int[num_V + 1 + start_idx];
+  ed = new int[num_V + 1 + start_idx];
+  for (int u = start_idx; u <= num_V + start_idx; ++u) {
     sd[u] = 0;
     ed[u] = d[u];
   }
   
-  struct edu {
-    int u;
-    int ed;
-    bool operator<(const edu& rsh) const {
-      // Non-increasing order
-      return ed < rsh.ed; 
-    }
-  };
+  for (int u = start_idx; u <= num_V + start_idx; ++u) {
+    q.insert(u);
+  }
 
-  std::priority_queue<edu> q;
-  while (q.size()) {
-    int u = q.top().u; q.pop();
+  while ((int) q.size()) {
+    int u = *q.begin(); q.erase(q.begin());
     if (visit[u]) continue;
-    visit[u] = 1;
-    
     CheckCore(u);
     if (sd[u] >= mu) {
       ClusterCore(u);
     }
   }
+
+  std::set<std::set<int>> cluster_core;
+  std::vector<std::pair<int, int>> order_core;
+  for (int i = 0; i <= num_V; ++i) {
+    order_core.push_back(std::make_pair(dsu.find_set(i), i));
+  }
+
+  // Memoization N_eps
+  for (int u = start_idx; u <= num_V + start_idx; ++u) {
+    int count = 0;
+    for (int v: adj[u]) {
+      if (u == v || sigma[{u, v}] >= epsilon)
+        ++count;
+    }
+    N_eps[u] = count;
+  }
+
+  sort(order_core.begin(), order_core.end());
+
+  
   
   // Finish Time for algorithm 3
   t = clock() - t;
@@ -429,7 +458,7 @@ int main() {
 
 
   printf("\n\n...END\n");
-  scanf(" ");
+  // scanf(" ");
   
   for (int i = 0; i <= num_V; ++i)
     adj[i].clear();
