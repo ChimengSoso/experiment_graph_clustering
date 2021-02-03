@@ -14,15 +14,19 @@
 #include "utility.hpp"
 #define DEBUG if (0)
 
+const double mu = 4, epsilon = 0.7;
+
 std::vector<int>* adj;
 std::pair<int, int>* edge;
 bool* visit;
 int *d;
 std::map<std::pair<int, int>, double> sigma;
 int* N_eps;
+int* sd;
+int* ed;
+data_struct::DSU dsu;
 
-const double mu = 4, epsilon = 0.7;
-
+// Use for SCAN and Chi algorithm
 void cluster(int s, std::set<int>& C) {
   std::queue<int> q;
   q.push(s);
@@ -41,6 +45,70 @@ void cluster(int s, std::set<int>& C) {
         }
       }
     }
+  }
+}
+
+// Use for pSCAN
+void CheckCore(int u) {
+  if (ed[u] >= mu && sd[u] < mu) {
+    ed[u] = d[u];
+    sd[u] = 0;
+    for (int v: adj[u]) {
+      // Compute sigma(u, v)
+      sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+
+      if (sigma[{u, v}]>= epsilon) sd[u] = sd[u] + 1;
+      else ed[u] = ed[u] - 1;
+
+      if (!visit[v]) {
+        if (sigma[{u, v}] >= epsilon) sd[v] = sd[v] + 1; 
+        else ed[v] = ed[v] - 1;
+      }
+
+      if (ed[u] < mu || sd[u] >= mu) break;
+    }
+  }
+  visit[u] = 1;
+}
+
+// Use for pSCAN
+void ClusterCore(int u) {
+  std::vector<int> Nplam_u;
+  for (int v: adj[u]) {
+    if (sigma[{u, v}] != 0) {
+      // sigma(u, v) is computed
+      Nplam_u.push_back(v);
+    }
+  }
+
+  for (int v: Nplam_u) {
+    if (sd[v] >= mu && sigma[{u, v}] >= epsilon) {
+      dsu.union_node(u, v);
+    }
+  }
+
+  // finding N[u] - N'[u]
+  std::vector<int> N_remain;
+  int i = 0, j = 0, n = (int) adj[u].size(), m = (int) Nplam_u.size();
+  while (i < n && j < m) {
+    if (adj[u][i] == Nplam_u[j]) ++j;
+    else N_remain.push_back(adj[u][i]);
+    ++i;
+  } 
+  while (i < n) N_remain.push_back(adj[u][i++]);
+  
+  for (int v: N_remain) {
+    if (dsu.find_set(u) != dsu.find_set(v) && ed[v] >= mu) {
+      // computed sigma(u, v)
+      sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+      if (!visit[v]) {
+        if (sigma[{u, v}] >= epsilon) sd[v] = sd[v] + 1;
+        else ed[v] = ed[v] - 1;
+      }
+      if (sd[v] >= mu && sigma[{u, v}] >= epsilon) {
+        dsu.union_node(u, v);
+      }
+    }    
   }
 }
 
@@ -315,19 +383,45 @@ int main() {
   printf("=================================================\n");
   printf("[Report] calculating time for algorithm pSCAN ...");
 
+   // Reset everything
+  for (int i = 0; i <= num_V; ++i) {
+    visit[i] = 0;
+    N_eps[i] = 0;
+  }
+  sigma.clear();
+
   // Start Time for algorithm 3 (pSCAN algorithm)
   t = clock();
   
   // Do pscan algorithm
-  data_struct::DSU dsu(num_V + 1);
-  int* sd = new int[num_V + 1];
-  int* ed = new int[num_V + 1];
+  dsu.assign(num_V + 1);
+  sd = new int[num_V + 1];
+  ed = new int[num_V + 1];
   for (int u = 0; u <= num_V; ++u) {
     sd[u] = 0;
     ed[u] = d[u];
   }
   
-  
+  struct edu {
+    int u;
+    int ed;
+    bool operator<(const edu& rsh) const {
+      // Non-increasing order
+      return ed < rsh.ed; 
+    }
+  };
+
+  std::priority_queue<edu> q;
+  while (q.size()) {
+    int u = q.top().u; q.pop();
+    if (visit[u]) continue;
+    visit[u] = 1;
+    
+    CheckCore(u);
+    if (sd[u] >= mu) {
+      ClusterCore(u);
+    }
+  }
   
   // Finish Time for algorithm 3
   t = clock() - t;
@@ -339,6 +433,6 @@ int main() {
   
   for (int i = 0; i <= num_V; ++i)
     adj[i].clear();
-  delete adj, edge, visit, d, N_eps;
+  delete adj, edge, visit, d, N_eps, sd, ed;
   return 0;
 }

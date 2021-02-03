@@ -76,17 +76,26 @@ static inline void trim(std::string &s) {
 namespace data_struct{
   class DSU {
     public: 
-      DSU(int n) {
+      DSU() {}
+      ~DSU() {
+        delete parent;
+      }
+      void assign(int n) {
         parent = new int[n + 1];
         std::iota(parent, parent + n + 1, 0);
         all = n + 1;
       }
-      ~DSU() {
-        delete parent;
+      void union_node(int u, int v) {
+        if (find_set(u) != find_set(v)) {
+          parent[u] = v;
+        }
+      }
+      int find_set(int u) {
+        if (parent[u] == u) return u;
+        return parent[u] = find_set(parent[u]);
       }
     private:
       int *parent;
       int all;
-
   };
 }
