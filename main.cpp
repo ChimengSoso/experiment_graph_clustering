@@ -62,12 +62,20 @@ void CheckCore(int u) {
       // Compute sigma(u, v)
       sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
 
-      if (sigma[{u, v}]>= epsilon) sd[u] = sd[u] + 1;
-      else ed[u] = ed[u] - 1;
+      if (sigma[{u, v}] >= epsilon) {
+        sd[u] = sd[u] + 1;
+        // printf("ADD sd[u]: %d, u: %d, v: %d\n", sd[u], u, v);
+      } else {
+        q.erase(u);
+        ed[u] = ed[u] - 1;
+        q.insert(u);
+      }
 
-      if (!visit[v]) {
-        if (sigma[{u, v}] >= epsilon) sd[v] = sd[v] + 1; 
-        else {
+      if (u != v && !visit[v]) {
+        if (sigma[{u, v}] >= epsilon) {
+          sd[v] = sd[v] + 1; 
+          // printf("add sd[v]: %d, v: %d, u: %d\n", sd[v], v, u);
+        } else {
           q.erase(v);
           ed[v] = ed[v] - 1;
           q.insert(v);
@@ -95,6 +103,7 @@ void ClusterCore(int u) {
       dsu.union_node(u, v);
     }
   }
+  
 
   // finding N[u] - N'[u]
   std::vector<int> N_remain;
@@ -424,7 +433,7 @@ int main() {
   }
 
   while ((int) q.size()) {
-    int u = *q.begin(); q.erase(q.begin());
+    int u = *q.begin(); q.erase(u);
     if (visit[u]) continue;
     CheckCore(u);
     if (sd[u] >= mu) {
@@ -432,26 +441,36 @@ int main() {
     }
   }
 
-  std::set<std::set<int>> cluster_core;
   std::vector<std::pair<int, int>> order_core;
   for (int i = 0; i <= num_V; ++i) {
     order_core.push_back(std::make_pair(dsu.find_set(i), i));
   }
 
-  // Memoization N_eps
-  for (int u = start_idx; u <= num_V + start_idx; ++u) {
-    int count = 0;
-    for (int v: adj[u]) {
-      if (u == v || sigma[{u, v}] >= epsilon)
-        ++count;
-    }
-    N_eps[u] = count;
-  }
-
   sort(order_core.begin(), order_core.end());
+  std::set<std::set<int>> cluster_core;
+  for (int i = 0; i < (int) order_core.size(); ++i) {
+    int p = order_core[i].first;
+    std::set<int> C;
+    for (int j = i; j < (int) order_core.size() && order_core[j].first == p; ++j) {
+      int u = order_core[j].second;
+      C.insert(u);
+      i = j;
+      // printf("\nu: %d, p: %d", u, p);
+    }
+    if ((int) C.size() > 1) {
+      cluster_core.insert(C);
+    }
+  }
+  
+  int clus = 0;
+  for (auto C: cluster_core) {
+    printf("\nCluster of core %d:", ++clus);
+    for (int node: C) {
+      printf(" %d", node);
+    }
+  }
+  printf("\n");
 
-  
-  
   // Finish Time for algorithm 3
   t = clock() - t;
   printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
