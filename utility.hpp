@@ -43,7 +43,7 @@ int intersect(const std::vector<int>& a, const std::vector<int>& b,
   return c;
 }
 
-int fast_intersect(const std::vector<int>& a, const std::vector<int>& b) {
+int divide_base(const std::vector<int>& a, const std::vector<int>& b) {
   int n = (int) a.size();
   int m = (int) b.size();
   if (n > m) {
@@ -81,6 +81,7 @@ namespace data_struct{
         delete parent;
       }
       void assign(int n) {
+        delete parent;
         parent = new int[n + 1];
         std::iota(parent, parent + n + 1, 0);
         all = n + 1;
