@@ -140,7 +140,7 @@ void ClusterCore(int u) {
 
 int main() {
 
-  std::string data_set = "input.txt";
+  // std::string data_set = "input.txt";
   // std::string data_set = "com-youtube.ungraph.txt";  // Success
   // std::string data_set = "com-amazon.ungraph.txt";
   // std::string data_set = "Email-Enron.txt";
@@ -159,15 +159,15 @@ int main() {
   // std::string data_set = "oregon2_010407.txt";
   // std::string data_set = "oregon1_010331.txt"; // Success
   // std::string data_set = "as20000102.txt"; // Success
-  // std::string data_set = "as-skitter.txt"; // Success
+  std::string data_set = "as-skitter.txt"; // Success
   // std::string data_set = "Brightkite_edges.txt";
   // std::string data_set = "Gowalla_edges.txt"; // Success
   // std::string data_set = "musae_chameleon_edges.csv"; 
   // std::string data_set = "musae_crocodile_edges.csv"; // Success 
   // std::string data_set = "musae_squirrel_edges.csv";  // Almost Success
-  // std::string data_set = "roadNet-TX.txt"; 
-  // std::string data_set = "roadNet-PA.txt";
-  // std::string data_set = "roadNet-CA.txt";
+  // std::string data_set = "roadNet-TX.txt"; // pSCAN success
+  // std::string data_set = "roadNet-PA.txt"; // pSCAN success
+  // std::string data_set = "roadNet-CA.txt"; // pSCAN success
   // std::string data_set = "RO_edges.csv";
   // std::string data_set = "HU_edges.csv";
   // std::string data_set = "HR_edges.csv";
@@ -241,7 +241,7 @@ int main() {
   }
   printf("\r[Status] Loaded: 100%%         \n");
   printf("[Complete] scan dataset from \"%s\"\n", data_set.c_str());
-  printf("[Info] number of Nodes: %d, Start node id: %d\n", num_V + 1, start_idx);
+  printf("[Info] number of Nodes: %d, Start node id: %d\n", num_V + 1 - start_idx, start_idx);
   printf("[Info] number of Edges: %d\n\n", num_E);
   printf("[Report] calculating time for algorithm Chi ...");
   fflush(stdout);
@@ -280,7 +280,7 @@ int main() {
   }
 
   // sort adj list of each node
-  for (int i = start_idx; i <= num_V + start_idx; ++i) {
+  for (int i = start_idx; i <= num_V; ++i) {
     adj[i].push_back(i);
     
     std::sort(adj[i].begin(), adj[i].end());
@@ -320,7 +320,7 @@ int main() {
 
 
   // Memoization N_eps
-  for (int u = start_idx; u <= num_V + start_idx; ++u) {
+  for (int u = start_idx; u <= num_V; ++u) {
     int count = 0;
     for (int v: adj[u]) {
       if (u == v || sigma[{u, v}] >= epsilon)
@@ -369,7 +369,7 @@ int main() {
   fflush(stdout);
 
   // Reset everything
-  for (int i = start_idx; i <= num_V + start_idx; ++i) {
+  for (int i = start_idx; i <= num_V; ++i) {
     visit[i] = 0;
     N_eps[i] = 0;
   }
@@ -386,7 +386,7 @@ int main() {
   }
 
   // Memoization N_eps
-  for (int u = start_idx; u <= num_V + start_idx; ++u) {
+  for (int u = start_idx; u <= num_V; ++u) {
     int count = 0;
     for (int v: adj[u]) {
       if (u == v || sigma[{u, v}] >= epsilon)
@@ -397,7 +397,7 @@ int main() {
 
   // Make cluster
   Cluster = std::set<std::set<int>>();
-  for (int u = start_idx; u <= num_V + start_idx; ++u) {
+  for (int u = start_idx; u <= num_V; ++u) {
     std::set<int> C;
     if (!visit[u]) {
       cluster(u, C);
@@ -423,8 +423,8 @@ int main() {
   printf("\r[Report] time for algorithm SCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
   printf("=================================================\n");
   printf("[Report] calculating time for algorithm pSCAN ...");
-
-   // Reset everything
+  fflush(stdout);
+  // Reset everything
   for (int i = start_idx; i <= num_V + start_idx; ++i) {
     visit[i] = 0;
     N_eps[i] = 0;
@@ -438,12 +438,12 @@ int main() {
   dsu.assign(num_V + 1 + start_idx);
   sd = new int[num_V + 1 + start_idx];
   ed = new int[num_V + 1 + start_idx];
-  for (int u = start_idx; u <= num_V + start_idx; ++u) {
+  for (int u = start_idx; u <= num_V; ++u) {
     sd[u] = 0;
     ed[u] = d[u];
   }
   
-  for (int u = start_idx; u <= num_V + start_idx; ++u) {
+  for (int u = start_idx; u <= num_V; ++u) {
     q.insert(u);
   }
 
@@ -457,23 +457,23 @@ int main() {
   }
 
   std::vector<std::pair<int, int>> order_core;
-  for (int i = 0; i <= num_V; ++i) {
+  for (int i = start_idx; i <= num_V; ++i) {
     order_core.push_back(std::make_pair(dsu.find_set(i), i));
   }
 
   sort(order_core.begin(), order_core.end());
-  std::set<std::set<int>> cluster_core;
+  std::vector<std::vector<int>> cluster_core;
   for (int i = 0; i < (int) order_core.size(); ++i) {
     int p = order_core[i].first;
-    std::set<int> C;
+    std::vector<int> C;
     for (int j = i; j < (int) order_core.size() && order_core[j].first == p; ++j) {
       int u = order_core[j].second;
-      C.insert(u);
+      C.push_back(u);
       i = j;
       // printf("\nu: %d, p: %d", u, p);
     }
     if ((int) C.size() > 1) {
-      cluster_core.insert(C);
+      cluster_core.push_back(C);
     }
   }
   DEBUG {
@@ -490,13 +490,15 @@ int main() {
   // Cluster Noncore
   Cluster = std::set<std::set<int>>();
   for (auto Cc: cluster_core) {
-    std::set<int> C = Cc;
+    std::set<int> C(Cc.begin(), Cc.end());
     for (int u: Cc) {
       for (int v: adj[u]) {
         if (sd[v] < mu && C.find(v) == C.end()) {
-          if (sigma[{u, v}] == 0) {
-            sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
-            sigma[{v, u}] = sigma[{u, v}];
+          if (sigma[{u, v}] == 0 || sigma[{v, 0}] == 0) {
+            if (sigma[{u, v}] == 0)
+              sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+            if (sigma[{v, u}] == 0)
+              sigma[{v, u}] = sigma[{u, v}];
           }
           if (sigma[{u, v}] >= epsilon) {
             C.insert(v);
@@ -526,8 +528,8 @@ int main() {
   printf("\n\n...END\n");
   // scanf(" ");
   
-  for (int i = 0; i <= num_V; ++i)
-    adj[i].clear();
-  delete adj, edge, visit, d, N_eps, sd, ed;
+  // for (int i = start_idx; i <= num_V; ++i)
+  //   adj[i].clear();
+  // delete adj, edge, visit, d, N_eps, sd, ed;
   return 0;
 }
