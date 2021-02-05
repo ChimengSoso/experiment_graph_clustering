@@ -15,7 +15,11 @@
 #define DEBUG if (0)
 #define SHOWCLUSTER if (0)
 
-double mu = 4, epsilon = 0.7;
+int mu = 4;
+double epsilon = 0.7;
+
+int num_V = 0, num_E = 0;
+int start_idx = 2e9;
 
 std::vector<int>* adj;
 std::pair<int, int>* edge;
@@ -247,25 +251,265 @@ void pSCAN::ClusterCore(int u) {
   }
 }
 
-int main() {
-  // std::string data_set = "input.txt";
+void start(std::ofstream& ofs) { 
+  double timeSCAN, timeChi, timePSCAN;
+  printf("Set epsilon: %.2f, mu: %d\n", epsilon, mu);
 
+  // Start Time for algorithm 1 (Chi algorithm)
+  clock_t t = clock();
+
+  // Calculating sigma cost
+  for (int i = 0; i < num_E; ++i) {
+    int u = edge[i].first, v = edge[i].second;
+    sigma[{u, v}] = fast_sigma_calculation(u, v) / sqrt(d[u] * d[v]);
+    sigma[{v, u}] = sigma[{u, v}];
+  }
+
+
+  // Memoization N_eps
+  for (int u = start_idx; u <= num_V; ++u) {
+    int count = 0;
+    for (int v: adj[u]) {
+      if (u == v || sigma[{u, v}] >= epsilon)
+        ++count;
+    }
+    N_eps[u] = count;
+  }
+
+  // Make cluster
+  std::set<std::set<int>> Cluster;
+  for (int u = 0; u <= num_V; ++u) {
+    std::set<int> C;
+    if (!visit[u]) {
+      cluster(u, C);
+      if (C.size() > 1)
+        Cluster.insert(C);
+    }
+  }
+
+
+  DEBUG {
+    // Show N_eps
+    for (int i = start_idx; i <= num_V + start_idx; ++i) {
+      printf("N_eps for node %d: %d\n", i, N_eps[i]);
+    }
+  }
+
+  SHOWCLUSTER {
+    // show Cluster
+    int clus = 0;
+    for (auto C: Cluster) {
+      printf("\nCluster of Chi %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
+    }
+    printf("\n");
+  } 
+
+  // Finish Time for algorithm 1 (Chi algorithm)
+  t = clock() - t;
+  timeChi = 1.00 * t / CLOCKS_PER_SEC;
+
+  printf("\r[Report] time for algorithm Chi: %.6f second(s)\n", timeChi);
+  printf("=================================================\n");
+  printf("[Report] calculating time for algorithm SCAN ...");
+  fflush(stdout);
+
+  // Reset everything
+  for (int i = start_idx; i <= num_V; ++i) {
+    visit[i] = 0;
+    N_eps[i] = 0;
+  }
+  sigma.clear();
+  Cluster.clear();
+
+  // Start Time for algorithm 2 (SCAN algorithm)
+  t = clock();
+
+  // Calculating sigma cost
+  for (int i = 0; i < num_E; ++i) {
+    int u = edge[i].first, v = edge[i].second;
+    sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+    sigma[{v, u}] = sigma[{u, v}];
+  }
+
+  // Memoization N_eps
+  for (int u = start_idx; u <= num_V; ++u) {
+    int count = 0;
+    for (int v: adj[u]) {
+      if (u == v || sigma[{u, v}] >= epsilon)
+        ++count;
+    }
+    N_eps[u] = count;
+  }
+
+  // Make cluster
+  for (int u = start_idx; u <= num_V; ++u) {
+    std::set<int> C;
+    if (!visit[u]) {
+      cluster(u, C);
+      if (C.size() > 1)
+        Cluster.insert(C);
+    }
+  }
+
+  SHOWCLUSTER {
+    int clus = 0;
+    for (auto C: Cluster) {
+      printf("\nCluster of SCAN %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
+    }
+    printf("\n");
+  }
+
+  // Finish Time for algorithm 2
+  t = clock() - t;
+  timeSCAN = 1.00 * t / CLOCKS_PER_SEC;
+
+  printf("\r[Report] time for algorithm SCAN: %.6f second(s)\n", timeSCAN);
+  printf("=================================================\n");
+  printf("[Report] calculating time for algorithm pSCAN ...");
+  fflush(stdout);
+  // Reset everything
+  for (int i = start_idx; i <= num_V + start_idx; ++i) {
+    visit[i] = 0;
+    N_eps[i] = 0;
+  }
+  sigma.clear();
+  Cluster.clear();
+
+  // Start Time for algorithm 3 (pSCAN algorithm)
+  t = clock();
+  
+  // Do pscan algorithm
+  dsu.assign(num_V + 1 + start_idx);
+  sd = new int[num_V + 1 + start_idx];
+  ed = new int[num_V + 1 + start_idx];
+  for (int u = start_idx; u <= num_V; ++u) {
+    sd[u] = 0;
+    ed[u] = d[u];
+  }
+  
+  for (int u = start_idx; u <= num_V; ++u) {
+    q.insert(u);
+  }
+
+  while ((int) q.size()) {
+    int u = *q.begin(); q.erase(u);
+    if (visit[u]) continue;
+    pSCAN_CHI::CheckCore(u);
+    if (sd[u] >= mu) {
+      pSCAN_CHI::ClusterCore(u);
+    }
+  }
+
+  std::vector<std::pair<int, int>> order_core;
+  for (int i = start_idx; i <= num_V; ++i) {
+    order_core.push_back(std::make_pair(dsu.find_set(i), i));
+  }
+
+  sort(order_core.begin(), order_core.end());
+  std::vector<std::vector<int>> cluster_core;
+  for (int i = 0; i < (int) order_core.size(); ++i) {
+    int p = order_core[i].first;
+    std::vector<int> C;
+    for (int j = i; j < (int) order_core.size() && order_core[j].first == p; ++j) {
+      int u = order_core[j].second;
+      C.push_back(u);
+      i = j;
+      // printf("\nu: %d, p: %d", u, p);
+    }
+    if ((int) C.size() > 1) {
+      cluster_core.push_back(C);
+    }
+  }
+  DEBUG {
+    int clus = 0;
+    for (auto C: cluster_core) {
+      printf("\nCluster of core %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
+    }
+    printf("\n");
+  }
+
+  // Cluster Noncore
+  for (auto Cc: cluster_core) {
+    std::set<int> C(Cc.begin(), Cc.end());
+    for (int u: Cc) {
+      for (int v: adj[u]) {
+        if (sd[v] < mu && C.find(v) == C.end()) {
+          if (sigma[{u, v}] == 0 || sigma[{v, 0}] == 0) {
+            if (sigma[{u, v}] == 0)
+              sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
+            if (sigma[{v, u}] == 0)
+              sigma[{v, u}] = sigma[{u, v}];
+          }
+          if (sigma[{u, v}] >= epsilon) {
+            C.insert(v);
+          }
+        }
+      }
+    }
+    Cluster.insert(C);
+  }
+
+  SHOWCLUSTER {
+    int clus = 0;
+    for (auto C: Cluster) {
+      printf("\nCluster of pSCAN %d:", ++clus);
+      for (int node: C) {
+        printf(" %d", node);
+      }
+    }
+    printf("\n");
+  }
+
+  // Finish Time for algorithm 3
+  t = clock() - t;
+  timePSCAN = 1.00 * t / CLOCKS_PER_SEC;
+  printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", timePSCAN);
+  printf("=================================================\n\n\n");
+  // printf("\n\n...END\n");
+  // scanf(" ");
+  
+  // for (int i = start_idx; i <= num_V; ++i)
+  //   adj[i].clear();
+  // delete adj, edge, visit, d, N_eps, sd, ed;
+
+  ofs << timeSCAN << "," << timePSCAN << "," << timeChi;
+}
+
+int main(int argc, char *args[]) {
+  int mu_order[] = {2, 5, 10, 15};
+  double eps_order[] = {0.2, 0.4, 0.6, 0.8};
+  int num_test = sizeof(mu_order) / sizeof(mu_order[0]);
+  
+  std::string data_set(args[1]);
+
+  // std::string data_set = "as-skitter.txt"; // Success
   // std::string data_set = "com-youtube.ungraph.txt";  // Success
+  // std::string data_set = "Email-Enron.txt"; // pSCAN* Success
+  // std::string data_set = "Gowalla_edges.txt"; // Success
+  // std::string data_set = "roadNet-CA.txt"; // pSCAN and pSCAN* success
+  // std::string data_set = "CA-CondMat.txt"; // pSACN* Success
+
+  // std::string data_set = "input.txt";
   // std::string data_set = "oregon1_010331.txt"; // Success
   // std::string data_set = "oregon1_010421.txt"; // Success
   // std::string data_set = "oregon1_010428.txt"; // Success
   // std::string data_set = "oregon1_010519.txt"; // Success
   // std::string data_set = "oregon2_010414.txt"; // Success
-  // std::string data_set = "as20000102.txt"; // Success
 
-  // std::string data_set = "as-skitter.txt"; // Success
-  // std::string data_set = "Gowalla_edges.txt"; // Success
-  // std::string data_set = "musae_crocodile_edges.csv"; // Success 
-  // std::string data_set = "roadNet-CA.txt"; // pSCAN and pSCAN* success
   // std::string data_set = "roadNet-PA.txt"; // pSCAN and pSCAN* success
   // std::string data_set = "roadNet-TX.txt"; // pSCAN and pSCAN* success
-  // std::string data_set = "Email-Enron.txt"; // pSCAN* Success
-  // std::string data_set = "CA-CondMat.txt"; // pSACN* Success
+  
+  // std::string data_set = "musae_crocodile_edges.csv"; // Success 
+  // std::string data_set = "as20000102.txt"; // Success
 
   // std::string data_set = "com-amazon.ungraph.txt";
   // std::string data_set = "CA-HepTh.txt";
@@ -295,8 +539,6 @@ int main() {
   // int num_E = 1468364884;
   // ifstream in("twitter-2010.txt");
   
-  int num_V = 0, num_E = 0;
-  int start_idx = 2e9;
 
   // read graph data from file
   std::string line;
@@ -408,227 +650,29 @@ int main() {
     }
   }
 
-  // Start Time for algorithm 1 (Chi algorithm)
-  clock_t t = clock();
+  std::string outfile = "out_" + std::string(data_set.begin() + 8, data_set.end() - 4) + ".csv";
+  std::ofstream ofs;
+  ofs.open(outfile);
 
-  // Calculating sigma cost
-  for (int i = 0; i < num_E; ++i) {
-    int u = edge[i].first, v = edge[i].second;
-    sigma[{u, v}] = fast_sigma_calculation(u, v) / sqrt(d[u] * d[v]);
-    sigma[{v, u}] = sigma[{u, v}];
+  // add header file
+  ofs << "epsilon,mu,SCAN,pSCAN,Our algorithm\n";
+
+  epsilon = eps_order[num_test / 2];
+
+  for (int i = 0; i < num_test; ++i) {
+    mu = mu_order[i];
+    ofs << epsilon << "," << mu << ",";
+    start(ofs);
+    ofs << "\n";
   }
 
+  mu = mu_order[num_test / 2];
 
-  // Memoization N_eps
-  for (int u = start_idx; u <= num_V; ++u) {
-    int count = 0;
-    for (int v: adj[u]) {
-      if (u == v || sigma[{u, v}] >= epsilon)
-        ++count;
-    }
-    N_eps[u] = count;
+  for (int i = 0; i < num_test; ++i) {
+    epsilon = eps_order[i];
+    ofs << epsilon << "," << mu << ",";
+    start(ofs);
+    ofs << "\n";
   }
-
-  // Make cluster
-  std::set<std::set<int>> Cluster;
-  for (int u = 0; u <= num_V; ++u) {
-    std::set<int> C;
-    if (!visit[u]) {
-      cluster(u, C);
-      if (C.size() > 1)
-        Cluster.insert(C);
-    }
-  }
-
-
-  DEBUG {
-    // Show N_eps
-    for (int i = start_idx; i <= num_V + start_idx; ++i) {
-      printf("N_eps for node %d: %d\n", i, N_eps[i]);
-    }
-  }
-
-  SHOWCLUSTER {
-    // show Cluster
-    int clus = 0;
-    for (auto C: Cluster) {
-      printf("\nCluster of Chi %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  } 
-
-  // Finish Time for algorithm 1 (Chi algorithm)
-  t = clock() - t;
-
-  printf("\r[Report] time for algorithm Chi: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
-  printf("=================================================\n");
-  printf("[Report] calculating time for algorithm SCAN ...");
-  fflush(stdout);
-
-  // Reset everything
-  for (int i = start_idx; i <= num_V; ++i) {
-    visit[i] = 0;
-    N_eps[i] = 0;
-  }
-  sigma.clear();
-  Cluster.clear();
-
-  // Start Time for algorithm 2 (SCAN algorithm)
-  t = clock();
-
-  // Calculating sigma cost
-  for (int i = 0; i < num_E; ++i) {
-    int u = edge[i].first, v = edge[i].second;
-    sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
-    sigma[{v, u}] = sigma[{u, v}];
-  }
-
-  // Memoization N_eps
-  for (int u = start_idx; u <= num_V; ++u) {
-    int count = 0;
-    for (int v: adj[u]) {
-      if (u == v || sigma[{u, v}] >= epsilon)
-        ++count;
-    }
-    N_eps[u] = count;
-  }
-
-  // Make cluster
-  for (int u = start_idx; u <= num_V; ++u) {
-    std::set<int> C;
-    if (!visit[u]) {
-      cluster(u, C);
-      if (C.size() > 1)
-        Cluster.insert(C);
-    }
-  }
-
-  SHOWCLUSTER {
-    int clus = 0;
-    for (auto C: Cluster) {
-      printf("\nCluster of SCAN %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  }
-
-  // Finish Time for algorithm 2
-  t = clock() - t;
-
-  printf("\r[Report] time for algorithm SCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
-  printf("=================================================\n");
-  printf("[Report] calculating time for algorithm pSCAN ...");
-  fflush(stdout);
-  // Reset everything
-  for (int i = start_idx; i <= num_V + start_idx; ++i) {
-    visit[i] = 0;
-    N_eps[i] = 0;
-  }
-  sigma.clear();
-  Cluster.clear();
-
-  // Start Time for algorithm 3 (pSCAN algorithm)
-  t = clock();
-  
-  // Do pscan algorithm
-  dsu.assign(num_V + 1 + start_idx);
-  sd = new int[num_V + 1 + start_idx];
-  ed = new int[num_V + 1 + start_idx];
-  for (int u = start_idx; u <= num_V; ++u) {
-    sd[u] = 0;
-    ed[u] = d[u];
-  }
-  
-  for (int u = start_idx; u <= num_V; ++u) {
-    q.insert(u);
-  }
-
-  while ((int) q.size()) {
-    int u = *q.begin(); q.erase(u);
-    if (visit[u]) continue;
-    pSCAN_CHI::CheckCore(u);
-    if (sd[u] >= mu) {
-      pSCAN_CHI::ClusterCore(u);
-    }
-  }
-
-  std::vector<std::pair<int, int>> order_core;
-  for (int i = start_idx; i <= num_V; ++i) {
-    order_core.push_back(std::make_pair(dsu.find_set(i), i));
-  }
-
-  sort(order_core.begin(), order_core.end());
-  std::vector<std::vector<int>> cluster_core;
-  for (int i = 0; i < (int) order_core.size(); ++i) {
-    int p = order_core[i].first;
-    std::vector<int> C;
-    for (int j = i; j < (int) order_core.size() && order_core[j].first == p; ++j) {
-      int u = order_core[j].second;
-      C.push_back(u);
-      i = j;
-      // printf("\nu: %d, p: %d", u, p);
-    }
-    if ((int) C.size() > 1) {
-      cluster_core.push_back(C);
-    }
-  }
-  DEBUG {
-    int clus = 0;
-    for (auto C: cluster_core) {
-      printf("\nCluster of core %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  }
-
-  // Cluster Noncore
-  for (auto Cc: cluster_core) {
-    std::set<int> C(Cc.begin(), Cc.end());
-    for (int u: Cc) {
-      for (int v: adj[u]) {
-        if (sd[v] < mu && C.find(v) == C.end()) {
-          if (sigma[{u, v}] == 0 || sigma[{v, 0}] == 0) {
-            if (sigma[{u, v}] == 0)
-              sigma[{u, v}] = merge_base(adj[u], adj[v]) / sqrt(d[u] * d[v]);
-            if (sigma[{v, u}] == 0)
-              sigma[{v, u}] = sigma[{u, v}];
-          }
-          if (sigma[{u, v}] >= epsilon) {
-            C.insert(v);
-          }
-        }
-      }
-    }
-    Cluster.insert(C);
-  }
-
-  SHOWCLUSTER {
-    int clus = 0;
-    for (auto C: Cluster) {
-      printf("\nCluster of pSCAN %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  }
-
-  // Finish Time for algorithm 3
-  t = clock() - t;
-  printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
-  printf("=================================================\n");
-  printf("\n\n...END\n");
-  // scanf(" ");
-  
-  // for (int i = start_idx; i <= num_V; ++i)
-  //   adj[i].clear();
-  // delete adj, edge, visit, d, N_eps, sd, ed;
   return 0;
 }
