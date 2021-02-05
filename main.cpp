@@ -15,7 +15,7 @@
 #define DEBUG if (0)
 #define SHOWCLUSTER if (0)
 
-const double mu = 4, epsilon = 0.7;
+double mu = 4, epsilon = 0.7;
 
 std::vector<int>* adj;
 std::pair<int, int>* edge;
@@ -249,7 +249,7 @@ void pSCAN::ClusterCore(int u) {
 
 int main() {
   // std::string data_set = "input.txt";
-  
+
   // std::string data_set = "com-youtube.ungraph.txt";  // Success
   // std::string data_set = "oregon1_010331.txt"; // Success
   // std::string data_set = "oregon1_010421.txt"; // Success
@@ -624,112 +624,6 @@ int main() {
   t = clock() - t;
   printf("\r[Report] time for algorithm pSCAN: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
   printf("=================================================\n");
-  printf("[Report] calculating time for algorithm pSCAN + Chi ...");
-  fflush(stdout);
-  
-  // Reset everything
-  for (int i = start_idx; i <= num_V + start_idx; ++i) {
-    visit[i] = 0;
-    N_eps[i] = 0;
-  }
-  sigma.clear();
-  q.clear();
-  order_core.clear();
-  cluster_core.clear();
-  Cluster.clear();
-
-  // Start Time for algorithm 4 (pSCAN + CHI algorithm)
-  t = clock();
-  
-  // Do pscan algorithm
-  dsu.assign(num_V + 1 + start_idx);
-  sd = new int[num_V + 1 + start_idx];
-  ed = new int[num_V + 1 + start_idx];
-  for (int u = start_idx; u <= num_V; ++u) {
-    sd[u] = 0;
-    ed[u] = d[u];
-  }
-
-  for (int u = start_idx; u <= num_V; ++u) {
-    q.insert(u);
-  }
-
-  while ((int) q.size()) {
-    int u = *q.begin(); q.erase(u);
-    if (visit[u]) continue;
-    pSCAN::CheckCore(u);
-    if (sd[u] >= mu) {
-      pSCAN::ClusterCore(u);
-    }
-  }
-
-  for (int i = start_idx; i <= num_V; ++i) {
-    order_core.push_back(std::make_pair(dsu.find_set(i), i));
-  }
-
-  sort(order_core.begin(), order_core.end());
-  for (int i = 0; i < (int) order_core.size(); ++i) {
-    int p = order_core[i].first;
-    std::vector<int> C;
-    for (int j = i; j < (int) order_core.size() && order_core[j].first == p; ++j) {
-      int u = order_core[j].second;
-      C.push_back(u);
-      i = j;
-      // printf("\nu: %d, p: %d", u, p);
-    }
-    if ((int) C.size() > 1) {
-      cluster_core.push_back(C);
-    }
-  }
-
-  DEBUG {
-    int clus = 0;
-    for (auto C: cluster_core) {
-      printf("\nCluster of core (pSCAN + Chi) %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  }
-
-  // Cluster Noncore
-  for (auto Cc: cluster_core) {
-    std::set<int> C(Cc.begin(), Cc.end());
-    for (int u: Cc) {
-      for (int v: adj[u]) {
-        if (sd[v] < mu && C.find(v) == C.end()) {
-          if (sigma[{u, v}] == 0 || sigma[{v, 0}] == 0) {
-            if (sigma[{u, v}] == 0)
-              sigma[{u, v}] = fast_sigma_calculation(u, v) / sqrt(d[u] * d[v]);
-            if (sigma[{v, u}] == 0)
-              sigma[{v, u}] = sigma[{u, v}];
-          }
-          if (sigma[{u, v}] >= epsilon) {
-            C.insert(v);
-          }
-        }
-      }
-    }
-    Cluster.insert(C);
-  }
-
-  SHOWCLUSTER {
-    int clus = 0;
-    for (auto C: Cluster) {
-      printf("\nCluster of pSCAN + CHI %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  }
-
-  // Finish Time for algorithm 3
-  t = clock() - t;
-  printf("\r[Report] time for algorithm pSCAN + Chi: %.6f second(s)\n", 1.00 * t / CLOCKS_PER_SEC);;
-
-
   printf("\n\n...END\n");
   // scanf(" ");
   
