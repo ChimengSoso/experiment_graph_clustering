@@ -251,9 +251,12 @@ void pSCAN::ClusterCore(int u) {
   }
 }
 
-void start(std::ofstream& ofs) { 
-  double timeSCAN, timeChi, timePSCAN;
-  printf("Set epsilon: %.2f, mu: %d\n", epsilon, mu);
+void start(std::ofstream& ofs, double &timeChi, double &timeSCAN, double &timePSCAN, int id) { 
+  // double timeSCAN, timeChi, timePSCAN;
+  printf("id: %d, Set epsilon: %.2f, mu: %d\n", id, epsilon, mu);
+  
+  printf("[Report] calculating time for algorithm Chi ...");
+  fflush(stdout);
 
   // Start Time for algorithm 1 (Chi algorithm)
   clock_t t = clock();
@@ -264,7 +267,6 @@ void start(std::ofstream& ofs) {
     sigma[{u, v}] = fast_sigma_calculation(u, v) / sqrt(d[u] * d[v]);
     sigma[{v, u}] = sigma[{u, v}];
   }
-
 
   // Memoization N_eps
   for (int u = start_idx; u <= num_V; ++u) {
@@ -287,25 +289,6 @@ void start(std::ofstream& ofs) {
     }
   }
 
-
-  DEBUG {
-    // Show N_eps
-    for (int i = start_idx; i <= num_V + start_idx; ++i) {
-      printf("N_eps for node %d: %d\n", i, N_eps[i]);
-    }
-  }
-
-  SHOWCLUSTER {
-    // show Cluster
-    int clus = 0;
-    for (auto C: Cluster) {
-      printf("\nCluster of Chi %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  } 
 
   // Finish Time for algorithm 1 (Chi algorithm)
   t = clock() - t;
@@ -352,17 +335,6 @@ void start(std::ofstream& ofs) {
       if (C.size() > 1)
         Cluster.insert(C);
     }
-  }
-
-  SHOWCLUSTER {
-    int clus = 0;
-    for (auto C: Cluster) {
-      printf("\nCluster of SCAN %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
   }
 
   // Finish Time for algorithm 2
@@ -426,16 +398,6 @@ void start(std::ofstream& ofs) {
       cluster_core.push_back(C);
     }
   }
-  DEBUG {
-    int clus = 0;
-    for (auto C: cluster_core) {
-      printf("\nCluster of core %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  }
 
   // Cluster Noncore
   for (auto Cc: cluster_core) {
@@ -458,17 +420,6 @@ void start(std::ofstream& ofs) {
     Cluster.insert(C);
   }
 
-  SHOWCLUSTER {
-    int clus = 0;
-    for (auto C: Cluster) {
-      printf("\nCluster of pSCAN %d:", ++clus);
-      for (int node: C) {
-        printf(" %d", node);
-      }
-    }
-    printf("\n");
-  }
-
   // Finish Time for algorithm 3
   t = clock() - t;
   timePSCAN = 1.00 * t / CLOCKS_PER_SEC;
@@ -479,17 +430,13 @@ void start(std::ofstream& ofs) {
   
   // for (int i = start_idx; i <= num_V; ++i)
   //   adj[i].clear();
-  // delete adj, edge, visit, d, N_eps, sd, ed;
+  delete sd, ed;
 
-  ofs << timeSCAN << "," << timePSCAN << "," << timeChi;
+  // ofs << timeSCAN << "," << timePSCAN << "," << timeChi;
 }
 
-int main(int argc, char *args[]) {
-  int mu_order[] = {2, 5, 10, 15};
-  double eps_order[] = {0.2, 0.4, 0.6, 0.8};
-  int num_test = sizeof(mu_order) / sizeof(mu_order[0]);
-  
-  std::string data_set(args[1]);
+void run_dataset(std::string name, std::ofstream& ofs, int id_dataset) {
+  std::string data_set(name);
 
   // std::string data_set = "as-skitter.txt"; // Success
   // std::string data_set = "com-youtube.ungraph.txt";  // Success
@@ -590,13 +537,12 @@ int main(int argc, char *args[]) {
     scan_data.close();
   } else {  
     std::cout << "[Fail] to scan datset \"" << data_set << "\"\n";
-    return 0;
+    return;
   }
   printf("\r[Status] Loaded: 100%%         \n");
   printf("[Complete] scan dataset from \"%s\"\n", data_set.c_str());
   printf("[Info] number of Nodes: %d, Start node id: %d\n", num_V + 1 - start_idx, start_idx);
   printf("[Info] number of Edges: %d\n\n", num_E);
-  printf("[Report] calculating time for algorithm Chi ...");
   fflush(stdout);
 
   std::ifstream in(data_set);
@@ -629,7 +575,7 @@ int main(int argc, char *args[]) {
     in.close();
   } else {
     std::cout << "Unable to open file" << "\n";
-    return 0;
+    return;
   }
 
   // sort adj list of each node
@@ -650,29 +596,52 @@ int main(int argc, char *args[]) {
     }
   }
 
-  std::string outfile = "out_" + std::string(data_set.begin() + 8, data_set.end() - 4) + ".csv";
+  int num_testing_per_exp = 1;
+  double avgChi = 0, avgSCAN = 0, avgPSCAN = 0;
+  for (int id = 1; id <= num_testing_per_exp; ++id) {      
+    double chi, scan, pscan;
+    start(ofs, chi, scan, pscan, id);
+    avgChi += chi;
+    avgSCAN += scan;
+    avgPSCAN += pscan;
+  }
+  avgChi /= num_testing_per_exp;
+  avgSCAN /= num_testing_per_exp;
+  avgPSCAN /= num_testing_per_exp;
+
+  ofs << id_dataset << "," + name + "," 
+      << avgSCAN << "," << avgPSCAN << "," << avgChi << "\n";
+}
+
+
+int main() {
+
+  epsilon = 0.6;
+  mu = 10;
+
+  // sort by DS# in paper
+  std::string dataset_name[] = {"com-youtube.ungraph.txt",   // DS1
+                                "as20000102.txt",            // DS2
+                                "as-skitter.txt",            // DS3
+                                "Gowalla_edges.txt",         // DS4
+                                "musae_chameleon_edges.csv", // DS5
+                                "roadNet-CA.txt",            // DS6
+                                "roadNet-PA.txt",            // DS7
+                                "roadNet-TX.txt",            // DS8
+                                "Email-Enron.txt",           // DS9
+                                "CA-CondMat.txt"};           // DS10
+  int num_dataset = 10;
+
+  std::string outfile = "out_all_dataset.csv";
   std::ofstream ofs;
   ofs.open(outfile);
-
   // add header file
-  ofs << "epsilon,mu,SCAN,pSCAN,Our algorithm\n";
+  ofs << "id,datasetname,SCAN,PSCAN,Our Algorithm\n";
 
-  epsilon = eps_order[num_test / 2];
-
-  for (int i = 0; i < num_test; ++i) {
-    mu = mu_order[i];
-    ofs << epsilon << "," << mu << ",";
-    start(ofs);
-    ofs << "\n";
+  for (int i = 0; i < num_dataset; ++i) {
+    run_dataset(dataset_name[i], ofs, 1 + i);
   }
+  ofs.close();
 
-  mu = mu_order[num_test / 2];
-
-  for (int i = 0; i < num_test; ++i) {
-    epsilon = eps_order[i];
-    ofs << epsilon << "," << mu << ",";
-    start(ofs);
-    ofs << "\n";
-  }
   return 0;
 }
