@@ -498,18 +498,18 @@ int main(int argc, char *args[]) {
   // std::string data_set = "roadNet-CA.txt"; // pSCAN and pSCAN* success
   // std::string data_set = "CA-CondMat.txt"; // pSACN* Success
 
+  // std::string data_set = "roadNet-PA.txt"; // pSCAN and pSCAN* success
+  // std::string data_set = "roadNet-TX.txt"; // pSCAN and pSCAN* success
+  // std::string data_set = "musae_crocodile_edges.csv"; // Success 
+  // std::string data_set = "as20000102.txt"; // Success
+
   // std::string data_set = "input.txt";
+  // std::string data_set = "oregon2_010414.txt"; // Success
   // std::string data_set = "oregon1_010331.txt"; // Success
   // std::string data_set = "oregon1_010421.txt"; // Success
   // std::string data_set = "oregon1_010428.txt"; // Success
   // std::string data_set = "oregon1_010519.txt"; // Success
-  // std::string data_set = "oregon2_010414.txt"; // Success
-
-  // std::string data_set = "roadNet-PA.txt"; // pSCAN and pSCAN* success
-  // std::string data_set = "roadNet-TX.txt"; // pSCAN and pSCAN* success
   
-  // std::string data_set = "musae_crocodile_edges.csv"; // Success 
-  // std::string data_set = "as20000102.txt"; // Success
 
   // std::string data_set = "com-amazon.ungraph.txt";
   // std::string data_set = "CA-HepTh.txt";

@@ -14,14 +14,20 @@ def run_mu(namefile):
   mksz = 10
   fontsz = 16
 
-  plt.plot(data['mu'][:4], data['SCAN'][:4], 'g^-.', linewidth=lw,markersize=mksz,label='SCAN')
-  plt.plot(data['mu'][:4], data['pSCAN'][:4], 'rs:', linewidth=lw, markersize=mksz,label='pSCAN')
-  plt.plot(data['mu'][:4], data['Our algorithm'][:4], 'bo--',linewidth=lw,markersize=mksz,label='Our algorithm')
+  fig, ax = plt.subplots()
+
+  data_x = data['mu'][:4]
+
+  plt.plot(data_x, data['SCAN'][:4], 'g^-.', linewidth=lw,markersize=mksz,label='SCAN')
+  plt.plot(data_x, data['pSCAN'][:4], 'rs:', linewidth=lw, markersize=mksz,label='pSCAN')
+  plt.plot(data_x, data['Our algorithm'][:4], 'bo--',linewidth=lw,markersize=mksz,label='Our algorithm')
   plt.legend()
 
   plt.ylabel('Processing Time (s)', fontsize=fontsz)
-  plt.title(f'Dataset "{namefile[4:-4]}"', fontsize=fontsz)
+  # plt.title(f'Dataset "{namefile[4:-4]}"', fontsize=fontsz)
   plt.gca().set_xlabel(r'$\mu$', fontsize=fontsz)
+  ax.set_xticks(data_x)
+  # fig.tight_layout()
   # plt.show()
 
   plt.savefig(f'img/mu-{namefile[4:-4]}.png', format='png')
@@ -42,7 +48,7 @@ def run_eps(namefile):
   plt.legend()
 
   plt.ylabel('Processing Time (s)', fontsize=fontsz)
-  plt.title(f'Dataset "{namefile[4:-4]}"', fontsize=fontsz)
+  # plt.title(f'Dataset "{namefile[4:-4]}"', fontsize=fontsz)
   plt.gca().set_xlabel(r'$\epsilon$', fontsize=fontsz)
   # plt.show()
 
