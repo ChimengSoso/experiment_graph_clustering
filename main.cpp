@@ -596,7 +596,7 @@ void run_dataset(std::string name, std::ofstream& ofs, int id_dataset) {
     }
   }
 
-  int num_testing_per_exp = 1;
+  int num_testing_per_exp = 10;
   double avgChi = 0, avgSCAN = 0, avgPSCAN = 0;
   for (int id = 1; id <= num_testing_per_exp; ++id) {      
     double chi, scan, pscan;

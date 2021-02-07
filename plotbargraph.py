@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-data_set = pd.read_csv('out_all_dataset_test.csv')
+data_set = pd.read_csv('out_all_dataset.csv')
 
 labels = [f'DS{id}' for id in range(len(data_set))]
 # labels = [f'{name[:-4]}' for name in data_set['datasetname']]
+
 scan = data_set['SCAN']
 pscan = data_set['PSCAN']
 chi = data_set['Our Algorithm']
@@ -23,7 +24,10 @@ rects3 = ax.bar(x + width, chi, width, label='Our Algorithm',color='dodgerblue',
 
 ax.set_ylabel('Processing Time (s)', fontsize=fontsz)
 ax.set_xticks(x)
-ax.set_xticklabels(labels, rotation=0, fontsize=fontsz)
+ax.set_xticklabels(labels, rotation=0, fontsize=fontsz/1.5)
 ax.legend()
+
+# ax.xaxis_date()     # interpret the x-axis values as dates
+# fig.autofmt_xdate() # make space for and rotate the x-axis tick labels
 
 plt.show()
