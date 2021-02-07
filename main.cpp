@@ -594,23 +594,10 @@ void run_dataset(std::string name, std::ofstream& ofs, int id_dataset) {
       }
       printf("\n");
     }
-  }
 
-  int num_testing_per_exp = 10;
-  double avgChi = 0, avgSCAN = 0, avgPSCAN = 0;
-  for (int id = 1; id <= num_testing_per_exp; ++id) {      
-    double chi, scan, pscan;
-    start(ofs, chi, scan, pscan, id);
-    avgChi += chi;
-    avgSCAN += scan;
-    avgPSCAN += pscan;
+    // record of this experiment
+    ofs << i << "," << d[i] << "\n";
   }
-  avgChi /= num_testing_per_exp;
-  avgSCAN /= num_testing_per_exp;
-  avgPSCAN /= num_testing_per_exp;
-
-  ofs << id_dataset << "," + name + "," 
-      << avgSCAN << "," << avgPSCAN << "," << avgChi << "\n";
 }
 
 
@@ -631,17 +618,17 @@ int main() {
                                 "Email-Enron.txt",           // DS9
                                 "CA-CondMat.txt"};           // DS10
   int num_dataset = 10;
-
-  std::string outfile = "out_all_dataset.csv";
+  
   std::ofstream ofs;
-  ofs.open(outfile);
-  // add header file
-  ofs << "id,datasetname,SCAN,PSCAN,Our Algorithm\n";
-
   for (int i = 0; i < num_dataset; ++i) {
+    // add header file
+    std::string outfile = "degree_" + std::string(dataset_name[i].begin(),
+                                      dataset_name[i].end() - 4) + ".csv";
+    ofs.open(outfile);
+    ofs << "node,degree\n";
     run_dataset(dataset_name[i], ofs, 1 + i);
+    ofs.close();
   }
-  ofs.close();
 
   return 0;
 }
